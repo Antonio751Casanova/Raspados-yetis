@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Insumo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 /**
  * Controlador API: Insumos (Materia Prima)
@@ -32,15 +35,62 @@ class InsumoController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $porPagina = $request->input('per_page', 15);
+        $categoria = $request->input('categoria');
+        $search = $request->input('search');
+        $sort = $request->input('sort', 'nombre');
+        $order = strtolower($request->input('order', 'asc')) === 'desc' ? 'desc' : 'asc';
 
-        $insumos = Insumo::orderBy('nombre')
-            ->paginate($porPagina);
+        $columnasOrdenables = [
+            'nombre',
+            'unidad_medida',
+            'stock_actual',
+            'stock_minimo',
+            'costo_adquisicion',
+            'categoria',
+            'id',
+        ];
+
+        $query = Insumo::query();
+
+        if (!empty($categoria) && $categoria !== 'Todos') {
+            $query->where('categoria', $categoria);
+        }
+
+        if (!empty($search)) {
+            $query->where(function ($builder) use ($search) {
+                if (is_numeric($search)) {
+                    $builder->where('id', $search)
+                        ->orWhere('nombre', 'like', "%{$search}%");
+                } else {
+                    $builder->where('nombre', 'like', "%{$search}%");
+                }
+            });
+        }
+
+        if (!in_array($sort, $columnasOrdenables, true)) {
+            $sort = 'nombre';
+        }
+
+        $perPage = min((int) $request->input('per_page', 15), 1000);
+
+        $insumos = $query
+            ->orderByRaw('stock_actual <= stock_minimo DESC')
+            ->orderBy($sort, $order)
+            ->paginate($perPage)
+            ->appends($request->query());
+
+        $categorias = Insumo::query()
+            ->whereNotNull('categoria')
+            ->where('categoria', '!=', '')
+            ->distinct()
+            ->orderBy('categoria')
+            ->pluck('categoria');
 
         return response()->json([
             'exito'   => true,
             'mensaje' => 'Lista de insumos obtenida correctamente.',
             'datos'   => $insumos,
+            'categorias' => $categorias,
         ]);
     }
 
@@ -57,23 +107,37 @@ class InsumoController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        // Validación de datos de entrada
-        $datosValidados = $request->validate([
-            'nombre'             => 'required|string|max:255',
-            'unidad_medida'      => 'required|string|max:50',
-            'costo_adquisicion'  => 'required|numeric|min:0',
-            'stock_actual'       => 'nullable|numeric|min:0',
-            'stock_minimo'       => 'nullable|numeric|min:0',
-            'categoria'          => 'nullable|string|max:80',
-        ]);
+        try {
+            $datosValidados = $request->validate([
+                'nombre'             => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('insumos')->where(fn ($query) => $query->where('marca', $request->input('marca'))),
+                ],
+                'unidad_medida'      => 'required|string|max:50',
+                'costo_adquisicion'  => 'required|numeric|min:0',
+                'stock_actual'       => 'required|numeric|min:0',
+                'stock_minimo'       => 'required|numeric|min:0',
+                'categoria'          => 'required|string|max:80',
+                'marca'              => 'required|string|max:100',
+            ]);
 
-        $insumo = Insumo::create($datosValidados);
+            $insumo = Insumo::create($datosValidados);
 
-        return response()->json([
-            'exito'   => true,
-            'mensaje' => "Insumo '{$insumo->nombre}' creado correctamente.",
-            'datos'   => $insumo,
-        ], 201);
+            return response()->json([
+                'exito'   => true,
+                'mensaje' => "Insumo '{$insumo->nombre}' creado correctamente.",
+                'datos'   => $insumo,
+            ], 201);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (Throwable $e) {
+            return response()->json([
+                'exito'   => false,
+                'mensaje' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -129,23 +193,39 @@ class InsumoController extends Controller
             ], 404);
         }
 
-        // Validación parcial: solo se validan los campos enviados
-        $datosValidados = $request->validate([
-            'nombre'             => 'sometimes|required|string|max:255',
-            'unidad_medida'      => 'sometimes|required|string|max:50',
-            'costo_adquisicion'  => 'sometimes|required|numeric|min:0',
-            'stock_actual'       => 'sometimes|nullable|numeric|min:0',
-            'stock_minimo'       => 'sometimes|nullable|numeric|min:0',
-            'categoria'          => 'sometimes|nullable|string|max:80',
-        ]);
+        try {
+            $datosValidados = $request->validate([
+                'nombre'             => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('insumos')
+                        ->where(fn ($query) => $query->where('marca', $request->input('marca')))
+                        ->ignore($insumo->id),
+                ],
+                'unidad_medida'      => 'required|string|max:50',
+                'costo_adquisicion'  => 'required|numeric|min:0',
+                'stock_actual'       => 'required|numeric|min:0',
+                'stock_minimo'       => 'required|numeric|min:0',
+                'categoria'          => 'required|string|max:80',
+                'marca'              => 'required|string|max:100',
+            ]);
 
-        $insumo->update($datosValidados);
+            $insumo->update($datosValidados);
 
-        return response()->json([
-            'exito'   => true,
-            'mensaje' => "Insumo '{$insumo->nombre}' actualizado correctamente.",
-            'datos'   => $insumo,
-        ]);
+            return response()->json([
+                'exito'   => true,
+                'mensaje' => "Insumo '{$insumo->nombre}' actualizado correctamente.",
+                'datos'   => $insumo,
+            ]);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (Throwable $e) {
+            return response()->json([
+                'exito'   => false,
+                'mensaje' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -159,15 +239,33 @@ class InsumoController extends Controller
      *
      * DELETE /api/v1/insumos/{id}
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(Request $request, int $id): JsonResponse
     {
-        $insumo = Insumo::find($id);
+        $insumo = Insumo::with('productos')->find($id);
 
         if (!$insumo) {
             return response()->json([
                 'exito'   => false,
                 'mensaje' => 'Insumo no encontrado.',
             ], 404);
+        }
+
+        $tieneRelaciones = $insumo->productos()->exists();
+        $forzarEliminacion = $request->boolean('force');
+
+        if ($tieneRelaciones && !$forzarEliminacion) {
+            $productos = $insumo->productos()->pluck('nombre')->all();
+            $listaProductos = implode(', ', $productos);
+
+            return response()->json([
+                'exito'   => false,
+                'mensaje' => "No se puede eliminar. Este insumo es ingrediente de: {$listaProductos}.",
+                'productos' => $productos,
+            ], 409);
+        }
+
+        if ($tieneRelaciones && $forzarEliminacion) {
+            $insumo->productos()->detach();
         }
 
         $nombreInsumo = $insumo->nombre;

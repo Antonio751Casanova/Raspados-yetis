@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\InsumoController;
 use App\Http\Controllers\Api\V1\ProductoController;
 use App\Http\Controllers\Api\V1\CotizacionController;
@@ -21,13 +22,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// ─── Ruta de autenticación (Sanctum - default) ──────────────────────────
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+
 
 // ─── API v1 ─────────────────────────────────────────────────────────────
 Route::prefix('v1')->group(function () {
+    // ─── Autenticacion ─────────────────────────────────────────────────────
+    Route::post('auth/register', [AuthController::class, 'register'])->name('auth.register');
+    Route::post('auth/login', [AuthController::class, 'login'])->name('auth.login');
+    Route::post('auth/password/email', [AuthController::class, 'sendResetLinkEmail'])
+        ->name('auth.password.email');
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
+    });
 
     // ══════════════════════════════════════════════════════════════════════
     // ── Módulo A: Motor de Costeo ────────────────────────────────────────
@@ -52,15 +59,15 @@ Route::prefix('v1')->group(function () {
     // ── Motor de Costeo ──────────────────────────────────────────────────
     // GET  /api/v1/productos/{id}/costo-base → Calcular costo de producción unitario
     Route::get('productos/{id}/costo-base', [ProductoController::class, 'calcularCostoBase'])
-         ->name('productos.costo-base');
+        ->name('productos.costo-base');
 
     // POST /api/v1/cotizar-evento → Cotización completa de evento (insumos + transporte + nómina)
     Route::post('cotizar-evento', [ProductoController::class, 'cotizarEvento'])
-         ->name('cotizar-evento');
+        ->name('cotizar-evento');
 
         // POST /api/v1/cotizar-evento/pdf → Descargar cotización en PDF
-        Route::post('cotizar-evento/pdf', [ProductoController::class, 'cotizarEventoPdf'])
-            ->name('cotizar-evento.pdf');
+    Route::post('cotizar-evento/pdf', [ProductoController::class, 'cotizarEventoPdf'])
+        ->name('cotizar-evento.pdf');
 
     // POST /api/v1/cotizaciones → Crear cotizacion persistida
     Route::post('cotizaciones', [CotizacionController::class, 'store'])
@@ -82,6 +89,8 @@ Route::prefix('v1')->group(function () {
     Route::post('cotizaciones/{id}/cancelar', [CotizacionController::class, 'cancelar'])
         ->name('cotizaciones.cancelar');
 
+    Route::middleware('auth:sanctum')->group(function () {
+
     // ══════════════════════════════════════════════════════════════════════
     // ── Módulo B: Calendario y Gestión de Eventos ────────────────────────
     // ══════════════════════════════════════════════════════════════════════
@@ -92,17 +101,18 @@ Route::prefix('v1')->group(function () {
     // GET    /api/v1/eventos/{id}         → Ver detalle de un evento
     // PUT    /api/v1/eventos/{id}         → Actualizar un evento
     // DELETE /api/v1/eventos/{id}         → Eliminar un evento
-    Route::apiResource('eventos', EventoController::class);
+        Route::apiResource('eventos', EventoController::class);
 
     // ── Transición de Estado ─────────────────────────────────────────────
     // PATCH /api/v1/eventos/{id}/estado   → Cambiar estado (flujo validado)
-    Route::patch('eventos/{id}/estado', [EventoController::class, 'cambiarEstado'])
-         ->name('eventos.cambiar-estado');
+        Route::patch('eventos/{id}/estado', [EventoController::class, 'cambiarEstado'])
+            ->name('eventos.cambiar-estado');
     // ──────────────── Módulo C: CRM (Clientes y Eventos) ──────────────────────
-    Route::apiResource('clientes', ClienteController::class);
+        Route::apiResource('clientes', ClienteController::class);
 
     // ── Notificaciones del sistema ──────────────────────────────────────
-    Route::get('notificaciones', [NotificacionController::class, 'index'])->name('notificaciones.index');
-    Route::patch('notificaciones/{id}/leer', [NotificacionController::class, 'marcarLeida'])->name('notificaciones.leer');
-    Route::patch('notificaciones/leer-todas', [NotificacionController::class, 'marcarTodas'])->name('notificaciones.leer-todas');
+        Route::get('notificaciones', [NotificacionController::class, 'index'])->name('notificaciones.index');
+        Route::patch('notificaciones/{id}/leer', [NotificacionController::class, 'marcarLeida'])->name('notificaciones.leer');
+        Route::patch('notificaciones/leer-todas', [NotificacionController::class, 'marcarTodas'])->name('notificaciones.leer-todas');
+    });
 });
