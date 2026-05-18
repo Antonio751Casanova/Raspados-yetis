@@ -204,7 +204,7 @@ import Layout from '../layouts/Layout.astro';
    * - Eliminar insumos con confirmación
    */
 
-  const API_BASE = 'http://127.0.0.1:8001/api/v1';
+  const API_BASE = 'http://127.0.0.1:8000/api/v1';
   let todosLosInsumos: any[] = [];
   let insumoEditandoId: number | null = null;
 
@@ -235,7 +235,7 @@ import Layout from '../layouts/Layout.astro';
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                 </svg>
                 <p class="text-sm text-texto-500">No se pudo conectar con la API</p>
-                <p class="text-xs text-texto-400">Asegúrate de que Laravel esté corriendo en el puerto 8001</p>
+                <p class="text-xs text-texto-400">Asegúrate de que Laravel esté corriendo en el puerto 8000</p>
               </div>
             </td>
           </tr>`;

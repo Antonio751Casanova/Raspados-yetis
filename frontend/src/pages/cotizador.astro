@@ -54,7 +54,7 @@ import Layout from '../layouts/Layout.astro';
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
           </svg>
           <p class="text-sm text-red-500">No se pudo conectar con la API</p>
-          <p class="text-xs text-texto-400 mt-1">Ejecuta: <code class="bg-superficie-100 px-1 rounded">php artisan serve --port=8001</code></p>
+          <p class="text-xs text-texto-400 mt-1">Ejecuta: <code class="bg-superficie-100 px-1 rounded">php artisan serve --port=8000</code></p>
         </div>
       </div>
 
@@ -267,7 +267,7 @@ import Layout from '../layouts/Layout.astro';
 </div>
 
 <script>
-  const API_BASE = 'http://127.0.0.1:8001/api/v1';
+  const API_BASE = 'http://127.0.0.1:8000/api/v1';
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
   let productosDisponibles: any[] = [];
   let carrito: Array<{ producto_id: number; nombre: string; cantidad: number }> = [];
