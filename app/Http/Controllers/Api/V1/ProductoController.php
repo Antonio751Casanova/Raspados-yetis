@@ -34,10 +34,36 @@ class ProductoController extends Controller
     public function index(Request $request): JsonResponse
     {
         $porPagina = $request->input('per_page', 15);
+        $search = $request->input('search');
 
-        $productos = Producto::withCount('insumos')
+        $query = Producto::with(['insumos'])
+            ->withCount('insumos');
+
+        if (!empty($search)) {
+            $query->where(function ($builder) use ($search) {
+                if (is_numeric($search)) {
+                    $builder->where('id', $search);
+                } else {
+                    $builder->where('nombre', 'like', "%{$search}%");
+                }
+            });
+        }
+
+        $productos = $query
             ->orderBy('nombre')
             ->paginate($porPagina);
+
+        $productos->getCollection()->transform(function ($producto) {
+            if ($producto->relationLoaded('insumos')) {
+                $producto->insumos->transform(function ($insumo) {
+                    if ($insumo->pivot) {
+                        $insumo->pivot->cantidad = (float) $insumo->pivot->cantidad;
+                    }
+                    return $insumo;
+                });
+            }
+            return $producto;
+        });
 
         return response()->json([
             'exito'   => true,
@@ -97,6 +123,13 @@ class ProductoController extends Controller
         // Cargar relaciones para la respuesta
         $producto->load('insumos');
 
+        $producto->insumos->transform(function ($insumo) {
+            if ($insumo->pivot) {
+                $insumo->pivot->cantidad = (float) $insumo->pivot->cantidad;
+            }
+            return $insumo;
+        });
+
         return response()->json([
             'exito'   => true,
             'mensaje' => "Producto '{$producto->nombre}' creado correctamente.",
@@ -125,6 +158,13 @@ class ProductoController extends Controller
                 'mensaje' => 'Producto no encontrado.',
             ], 404);
         }
+
+        $producto->insumos->transform(function ($insumo) {
+            if ($insumo->pivot) {
+                $insumo->pivot->cantidad = (float) $insumo->pivot->cantidad;
+            }
+            return $insumo;
+        });
 
         return response()->json([
             'exito'   => true,
@@ -189,6 +229,13 @@ class ProductoController extends Controller
 
         // Recargar relaciones para la respuesta
         $producto->load('insumos');
+
+        $producto->insumos->transform(function ($insumo) {
+            if ($insumo->pivot) {
+                $insumo->pivot->cantidad = (float) $insumo->pivot->cantidad;
+            }
+            return $insumo;
+        });
 
         return response()->json([
             'exito'   => true,

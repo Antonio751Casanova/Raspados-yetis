@@ -303,6 +303,8 @@ $costoBase = $producto->calcularCostoProduccion(); // Retorna ej. 17.75
 - **Modal funcional** para agregar insumos con validación
 - **Stock actual/minimo y categoria** visibles en tabla de insumos con alerta de bajo stock
 - **Edicion directa** de insumos desde la tabla
+- **Tabla inteligente de insumos**: filtros por categoria, ordenamiento por columnas y paginacion desde backend
+- **Alertas de stock**: cantidad en rojo + icono cuando stock_actual <= stock_minimo
 - **Cotizador dinamico**: cantidades por producto, margenes editables y modal de datos del cliente
 - **Direccion detallada** en modal (municipio, colonia, calle/numero, descripcion)
 - **PDF profesional** con multiples productos y layout basado en tablas (DomPDF)

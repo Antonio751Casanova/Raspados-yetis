@@ -2,89 +2,156 @@
 /**
  * Pagina: Productos / Recetas
  *
- * Vista para crear productos y armar recetas con insumos.
- * Consume: GET /api/v1/insumos
- * Envia:   POST /api/v1/productos
+ * Vista para listar productos y administrar recetas.
  */
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout titulo="Productos / Recetas" descripcion="Creador de productos y recetas - Raspados Yeti ERP">
+<Layout titulo="Productos / Recetas" descripcion="Gestion de productos y recetas - Raspados Yeti ERP">
 
   <!-- Cabecera de la vista -->
   <div class="flex items-center justify-between mb-6">
     <div>
       <h3 class="text-2xl font-bold text-texto-900">Productos y Recetas</h3>
-      <p class="text-texto-500 mt-1">Crea nuevos productos y define sus insumos paso a paso</p>
+      <p class="text-texto-500 mt-1">Administra productos, recetas e insumos desde un solo panel</p>
+    </div>
+    <button id="btn-crear-producto"
+            class="inline-flex items-center gap-2 px-4 py-2.5 bg-yeti-600 text-white text-sm font-medium rounded-lg
+                   hover:bg-yeti-700 active:bg-yeti-800 shadow-sm hover:shadow-md
+                   focus:outline-none focus:ring-2 focus:ring-yeti-500 focus:ring-offset-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      Crear Producto
+    </button>
+  </div>
+
+  <!-- Tabla de productos -->
+  <div class="bg-white rounded-xl border border-superficie-200 shadow-card overflow-hidden">
+    <div class="px-6 py-4 border-b border-superficie-200 bg-superficie-50/50">
+      <div class="flex justify-end items-center gap-3">
+        <div class="relative w-full sm:max-w-xs">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-texto-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+          <input type="text" id="buscar-producto" placeholder="Buscar por ID o nombre..."
+                 class="pl-10 pr-4 py-2 w-full text-sm border border-gray-200 rounded-lg bg-white
+                        focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400
+                        placeholder:text-texto-400" />
+        </div>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full" id="tabla-productos">
+        <thead>
+          <tr class="bg-superficie-50 border-b border-superficie-200">
+            <th class="text-left px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-texto-500">ID</th>
+            <th class="text-left px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-texto-500">Nombre del Producto</th>
+            <th class="text-left px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-texto-500">Ingredientes (Cantidad)</th>
+            <th class="text-right px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-texto-500">Costo de Produccion</th>
+            <th class="text-center px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-texto-500">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-productos" class="divide-y divide-superficie-100">
+          <tr>
+            <td colspan="5" class="px-6 py-12 text-center">
+              <div class="flex flex-col items-center gap-3">
+                <div class="w-8 h-8 border-2 border-yeti-300 border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-sm text-texto-400">Cargando productos...</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+  <!-- ═══════════════ MODAL: Crear/Editar Producto ═══════════════ -->
+  <div id="modal-producto" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/30 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-panel w-full max-w-4xl mx-4 transform scale-95 opacity-0 max-h-[90vh] overflow-hidden flex flex-col"
+         id="modal-producto-contenido"
+         style="transition: transform 200ms ease-out, opacity 200ms ease-out;">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-superficie-200">
+        <h4 id="titulo-modal-producto" class="text-lg font-semibold text-texto-900">Agregar Nuevo Producto</h4>
+        <button id="btn-cerrar-modal-producto"
+                class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-superficie-100 text-texto-400 hover:text-texto-700">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
 
-    <!-- Columna izquierda: Formulario -->
-    <div class="lg:col-span-3">
-      <div class="bg-white rounded-xl border border-superficie-200 shadow-card p-6">
-        <h4 class="text-sm font-semibold text-texto-900 uppercase tracking-wide mb-4">Nuevo Producto</h4>
+      <form id="form-producto" class="p-6 space-y-5 overflow-y-auto flex-1" autocomplete="off">
+        <input type="hidden" id="input-producto-id" value="" />
+        <!-- Nombre del producto -->
+        <div>
+          <label for="input-nombre-producto" class="block text-sm font-medium text-texto-700 mb-1.5">Nombre del producto</label>
+          <input type="text" id="input-nombre-producto" name="nombre" required autocomplete="off"
+                 placeholder="Ej. Trole de 16oz"
+                 class="w-full px-3 py-2.5 text-sm border border-superficie-200 rounded-lg bg-white
+                        focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400
+                        placeholder:text-texto-400" />
+        </div>
 
-        <form id="form-producto" class="space-y-5">
-          <!-- Nombre del producto -->
-          <div>
-            <label for="input-nombre-producto" class="block text-sm font-medium text-texto-700 mb-1.5">Nombre del producto</label>
-            <input type="text" id="input-nombre-producto" name="nombre" required
-                   placeholder="Ej. Trole de 16oz"
-                   class="w-full px-3 py-2.5 text-sm border border-superficie-200 rounded-lg bg-white
-                          focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400
-                          placeholder:text-texto-400" />
-          </div>
-
-          <!-- Receta dinamica -->
-          <div>
-            <div class="flex items-center justify-between mb-3">
-              <label class="block text-sm font-medium text-texto-700">Receta del producto</label>
-              <button type="button" id="btn-agregar-insumo"
-                      class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium bg-yeti-600 text-white rounded-lg
-                             hover:bg-yeti-700 focus:outline-none focus:ring-2 focus:ring-yeti-500/40">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                Anadir Insumo
-              </button>
-            </div>
-
-            <div id="receta-vacia" class="text-sm text-texto-400 bg-superficie-50 border border-superficie-200 rounded-lg p-4">
-              Aun no hay insumos en la receta. Agrega al menos uno para continuar.
-            </div>
-
-            <div id="lista-receta" class="space-y-3 hidden"></div>
-          </div>
-
-          <!-- Mensaje de error / exito -->
-          <div id="mensaje-form" class="hidden rounded-lg px-4 py-3 text-sm"></div>
-
-          <!-- Boton guardar -->
-          <div class="flex justify-end">
-            <button type="submit" id="btn-guardar-producto"
-                    class="px-5 py-2.5 text-sm font-medium text-white bg-yeti-600 rounded-lg
-                           hover:bg-yeti-700 active:bg-yeti-800 shadow-sm hover:shadow-md
-                           focus:outline-none focus:ring-2 focus:ring-yeti-500 focus:ring-offset-2
-                           disabled:opacity-50 disabled:cursor-not-allowed">
-              Guardar Producto
+        <!-- Receta dinamica -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <label class="block text-sm font-medium text-texto-700">Receta del producto</label>
+            <button type="button" id="btn-agregar-insumo"
+                    class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium bg-yeti-600 text-white rounded-lg
+                           hover:bg-yeti-700 focus:outline-none focus:ring-2 focus:ring-yeti-500/40">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              Anadir Insumo
             </button>
           </div>
-        </form>
-      </div>
-    </div>
 
-    <!-- Columna derecha: Guia rapida -->
-    <div class="lg:col-span-2">
-      <div class="bg-white rounded-xl border border-superficie-200 shadow-card p-6">
-        <h4 class="text-sm font-semibold text-texto-900 uppercase tracking-wide mb-4">Guia Rapida</h4>
-        <ul class="text-sm text-texto-600 space-y-2">
-          <li>1) Escribe el nombre del nuevo producto.</li>
-          <li>2) Agrega los insumos que lleva la receta.</li>
-          <li>3) Define la cantidad fraccionada de cada insumo.</li>
-          <li>4) Guarda para crear el producto y su receta.</li>
-        </ul>
+          <div id="receta-vacia" class="text-sm text-texto-400 bg-superficie-50 border border-superficie-200 rounded-lg p-4">
+            Aun no hay insumos en la receta. Agrega al menos uno para continuar.
+          </div>
+
+          <div id="lista-receta" class="space-y-3 hidden"></div>
+        </div>
+
+        <!-- Mensaje de error / exito -->
+        <div id="mensaje-form" class="hidden rounded-lg px-4 py-3 text-sm"></div>
+
+        <!-- Boton guardar -->
+        <div class="flex justify-end gap-3">
+          <button type="button" id="btn-cancelar-producto"
+                  class="px-4 py-2.5 text-sm font-medium text-texto-700 bg-superficie-100 rounded-lg
+                         hover:bg-superficie-200 focus:outline-none">
+            Cancelar
+          </button>
+          <button type="submit" id="btn-guardar-producto"
+                  class="px-5 py-2.5 text-sm font-medium text-white bg-yeti-600 rounded-lg
+                         hover:bg-yeti-700 active:bg-yeti-800 shadow-sm hover:shadow-md
+                         focus:outline-none focus:ring-2 focus:ring-yeti-500 focus:ring-offset-2
+                         disabled:opacity-50 disabled:cursor-not-allowed">
+            Guardar Producto
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════════ MODAL: Ver Receta ═══════════════ -->
+  <div id="modal-receta" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/30 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-panel w-full max-w-2xl mx-4 transform scale-95 opacity-0 max-h-[90vh] overflow-hidden flex flex-col"
+         id="modal-receta-contenido"
+         style="transition: transform 200ms ease-out, opacity 200ms ease-out;">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-superficie-200">
+        <h4 id="titulo-modal-receta" class="text-lg font-semibold text-texto-900">Receta del Producto</h4>
+        <button id="btn-cerrar-modal-receta"
+                class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-superficie-100 text-texto-400 hover:text-texto-700">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="overflow-y-auto flex-1 p-4">
+        <div id="receta-detalle" class="space-y-3"></div>
       </div>
     </div>
   </div>
@@ -94,56 +161,163 @@ import Layout from '../layouts/Layout.astro';
 <script>
   const API_BASE = 'http://127.0.0.1:8000/api/v1';
   let insumosDisponibles = [];
+  let productos = [];
   let contadorFilas = 0;
+  let estadoTabla = {
+    search: '',
+  };
+
+  function formatearMoneda(valor) {
+    const numero = Number(valor) || 0;
+    return `$${numero.toFixed(2)}`;
+  }
 
   async function cargarInsumos() {
     try {
-      const res = await fetch(`${API_BASE}/insumos?per_page=200`);
+      const res = await fetch(`${API_BASE}/insumos?per_page=1000`);
       const json = await res.json();
       if (json.exito) {
-        insumosDisponibles = json.datos.data || [];
+        insumosDisponibles = (json.datos.data || []).sort((a, b) =>
+          a.nombre.localeCompare(b.nombre, 'es')
+        );
       }
     } catch {
       insumosDisponibles = [];
     }
   }
 
-  function construirOpcionesInsumos() {
-    if (insumosDisponibles.length === 0) {
-      return '<option value="" disabled selected>No hay insumos</option>';
+  async function cargarProductos() {
+    try {
+      const params = new URLSearchParams();
+      params.set('per_page', '200');
+      if (estadoTabla.search) params.set('search', estadoTabla.search);
+      const res = await fetch(`${API_BASE}/productos?${params.toString()}`);
+      const json = await res.json();
+      if (json.exito) {
+        productos = json.datos.data || [];
+        renderizarTabla();
+      }
+    } catch {
+      productos = [];
+      renderizarTabla();
     }
-    const opciones = insumosDisponibles.map(insumo => `
-      <option value="${insumo.id}">${insumo.nombre} (${insumo.unidad_medida})</option>
-    `).join('');
-    return `<option value="" disabled selected>Seleccionar insumo</option>${opciones}`;
   }
 
-  function agregarFilaReceta() {
+  function renderizarTabla() {
+    const tbody = document.getElementById('tbody-productos');
+    if (!tbody) return;
+
+    if (productos.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" class="px-6 py-12 text-center">
+            <div class="flex flex-col items-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-superficie-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+              </svg>
+              <p class="text-sm text-texto-500">No hay productos registrados</p>
+              <p class="text-xs text-texto-400">Haz clic en "Crear Producto" para comenzar</p>
+            </div>
+          </td>
+        </tr>`;
+      return;
+    }
+
+    tbody.innerHTML = productos.map(producto => {
+      const cantidadIngredientes = producto.insumos_count ?? (producto.insumos ? producto.insumos.length : 0);
+      return `
+      <tr class="hover:bg-superficie-50/80">
+        <td class="px-6 py-4">
+          <span class="text-xs font-mono text-texto-400 bg-superficie-100 px-2 py-0.5 rounded">#${producto.id}</span>
+        </td>
+        <td class="px-6 py-4">
+          <span class="text-sm font-medium text-texto-900">${producto.nombre}</span>
+        </td>
+        <td class="px-6 py-4">
+          <span class="text-sm text-texto-600">${cantidadIngredientes} ingrediente${cantidadIngredientes !== 1 ? 's' : ''}</span>
+        </td>
+        <td class="px-6 py-4 text-right">
+          <span class="text-sm font-semibold text-texto-900">${formatearMoneda(producto.costo_produccion || 0)}</span>
+        </td>
+        <td class="px-6 py-4 text-center">
+          <div class="flex items-center justify-center gap-2">
+            <button data-action="ver-receta" data-id="${producto.id}"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-texto-700
+                           bg-superficie-100 rounded-lg hover:bg-superficie-200 border border-superficie-200">
+              Ver Receta
+            </button>
+            <button data-action="editar" data-id="${producto.id}"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-texto-700
+                           bg-superficie-100 rounded-lg hover:bg-superficie-200 border border-superficie-200">
+              Editar
+            </button>
+            <button data-action="eliminar" data-id="${producto.id}"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-red-600
+                           bg-red-50 rounded-lg hover:bg-red-100 border border-red-200">
+              Eliminar
+            </button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function formatSmartUnit(cantidad, unidad) {
+    const valor = Number(cantidad);
+    if (Number.isNaN(valor)) return '';
+    const unidadLower = (unidad || '').toLowerCase();
+    if (unidadLower.includes('kg')) {
+      if (valor < 1) return `${valor * 1000} g`;
+      return `${valor} kg`;
+    }
+    if (unidadLower.includes('litros')) {
+      if (valor < 1) return `${valor * 1000} ml`;
+      return `${valor} litros`;
+    }
+    return `${valor} ${unidad || ''}`.trim();
+  }
+
+  function agregarFilaReceta(insumoId, cantidad) {
     const lista = document.getElementById('lista-receta');
     const vacia = document.getElementById('receta-vacia');
     if (!lista || !vacia) return;
 
-    const opciones = construirOpcionesInsumos();
     const idFila = `fila-${contadorFilas++}`;
+    const insumoSel = insumoId ? insumosDisponibles.find(i => i.id === parseInt(insumoId)) : null;
+    const opcionesHtml = insumosDisponibles.map(i =>
+      `<div class="opcion-insumo px-3 py-2 text-sm cursor-pointer hover:bg-yeti-50 flex items-center justify-between gap-2"
+            data-id="${i.id}" data-nombre="${i.nombre}" data-unidad="${i.unidad_medida}">
+        <span>${i.nombre}</span>
+        <span class="text-xs text-texto-400 shrink-0">${i.unidad_medida}</span>
+      </div>`
+    ).join('');
 
     const fila = document.createElement('div');
-    fila.className = 'flex items-center gap-3 p-3 border border-superficie-200 rounded-lg bg-superficie-50/60';
+    fila.className = 'flex items-start gap-3 p-3 border border-superficie-200 rounded-lg bg-superficie-50/60';
     fila.setAttribute('data-fila-id', idFila);
     fila.innerHTML = `
-      <div class="flex-1">
+      <div class="flex-1 relative">
         <label class="block text-xs font-medium text-texto-500 mb-1">Insumo</label>
-        <select class="select-insumo w-full px-3 py-2 text-sm border border-superficie-200 rounded-lg bg-white
-                       focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400">
-          ${opciones}
-        </select>
+        <input type="hidden" class="input-insumo-id" value="${insumoId || ''}" />
+        <input type="text"
+               class="input-buscar-insumo w-full px-3 py-2 text-sm border border-superficie-200 rounded-lg bg-white
+                      focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400"
+               placeholder="Escribe para buscar insumo..."
+               value="${insumoSel ? insumoSel.nombre + ' (' + insumoSel.unidad_medida + ')' : ''}"
+               autocomplete="off" />
+        <div class="dropdown-insumos hidden fixed z-[999] bg-white border border-superficie-200 rounded-lg shadow-xl max-h-52 overflow-y-auto">
+          ${opcionesHtml}
+        </div>
       </div>
-      <div class="w-40">
+      <div class="w-36 shrink-0">
         <label class="block text-xs font-medium text-texto-500 mb-1">Cantidad</label>
         <input type="number" class="input-cantidad w-full px-3 py-2 text-sm border border-superficie-200 rounded-lg bg-white
                        focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400"
-               step="0.0001" min="0.0001" placeholder="0.0000" />
+               step="0.0001" min="0.0001" placeholder="0.0000"
+               value="${cantidad ? parseFloat(cantidad) : ''}" />
+        <span class="text-xs text-green-600 helper-unidad font-medium mt-1 inline-block"></span>
       </div>
-      <button type="button" class="btn-quitar w-9 h-9 rounded-lg flex items-center justify-center bg-red-50 text-red-600
+      <button type="button" class="btn-quitar mt-5 w-9 h-9 shrink-0 rounded-lg flex items-center justify-center bg-red-50 text-red-600
                      hover:bg-red-100 border border-red-200">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -154,6 +328,17 @@ import Layout from '../layouts/Layout.astro';
     lista.appendChild(fila);
     vacia.classList.add('hidden');
     lista.classList.remove('hidden');
+
+    // Mostrar helper si es edición
+    if (insumoSel && cantidad) {
+      const helper = fila.querySelector('.helper-unidad');
+      const valor = parseFloat(cantidad);
+      const unidad = insumoSel.unidad_medida;
+      if (helper && valor > 0 && valor < 1) {
+        const txt = formatSmartUnit(valor, unidad);
+        if (txt !== `${valor} ${unidad}`.trim()) helper.textContent = `Equivale a: ${txt}`;
+      }
+    }
   }
 
   function eliminarFilaReceta(target) {
@@ -174,10 +359,10 @@ import Layout from '../layouts/Layout.astro';
     const recetaMap = new Map();
 
     filas.forEach(fila => {
-      const select = fila.querySelector('.select-insumo');
-      const input = fila.querySelector('.input-cantidad');
-      const insumoId = parseInt(select?.value || '0', 10);
-      const cantidad = parseFloat(input?.value || '0');
+      const inputId = fila.querySelector('.input-insumo-id');
+      const inputCantidad = fila.querySelector('.input-cantidad');
+      const insumoId = parseInt((inputId as HTMLInputElement)?.value || '0', 10);
+      const cantidad = parseFloat((inputCantidad as HTMLInputElement)?.value || '0');
 
       if (insumoId > 0 && cantidad > 0) {
         const acumulado = recetaMap.get(insumoId) || 0;
@@ -200,11 +385,73 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
+  async function abrirModalProducto(producto) {
+    // Refrescar insumos desde la API antes de abrir el modal
+    await cargarInsumos();
+
+    const modal = document.getElementById('modal-producto');
+    const contenido = document.getElementById('modal-producto-contenido');
+    const titulo = document.getElementById('titulo-modal-producto');
+    const form = document.getElementById('form-producto');
+    const inputId = document.getElementById('input-producto-id');
+
+    if (form) form.reset();
+    document.getElementById('mensaje-form')?.classList.add('hidden');
+    document.getElementById('lista-receta').innerHTML = '';
+    document.getElementById('lista-receta').classList.add('hidden');
+    document.getElementById('receta-vacia').classList.remove('hidden');
+
+    if (producto) {
+      inputId.value = String(producto.id || '');
+      if (titulo) titulo.textContent = 'Editar Producto';
+      document.getElementById('input-nombre-producto').value = producto.nombre || '';
+      cargarRecetaProducto(producto.id);
+    } else {
+      inputId.value = '';
+      if (titulo) titulo.textContent = 'Agregar Nuevo Producto';
+    }
+
+    modal?.classList.remove('hidden');
+    modal?.classList.add('flex');
+    setTimeout(() => {
+      contenido?.classList.remove('scale-95', 'opacity-0');
+      contenido?.classList.add('scale-100', 'opacity-100');
+    }, 10);
+  }
+
+  function cerrarModalProducto() {
+    const modal = document.getElementById('modal-producto');
+    const contenido = document.getElementById('modal-producto-contenido');
+    contenido?.classList.remove('scale-100', 'opacity-100');
+    contenido?.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+      modal?.classList.add('hidden');
+      modal?.classList.remove('flex');
+    }, 200);
+  }
+
+  async function cargarRecetaProducto(id) {
+    try {
+      const res = await fetch(`${API_BASE}/productos/${id}`);
+      const json = await res.json();
+      if (res.ok && json.exito) {
+        const receta = json.datos.insumos || [];
+        receta.forEach((insumo) => {
+          agregarFilaReceta(insumo.id, insumo.pivot?.cantidad || 0);
+        });
+      }
+    } catch {
+      mostrarMensaje('error', 'No se pudo cargar la receta del producto.');
+    }
+  }
+
   async function guardarProducto(event) {
     event.preventDefault();
     const btnGuardar = document.getElementById('btn-guardar-producto');
     const nombre = document.getElementById('input-nombre-producto')?.value?.trim();
     const receta = obtenerReceta();
+    const productoId = document.getElementById('input-producto-id')?.value;
+    const esEdicion = Boolean(productoId);
 
     if (!nombre) {
       mostrarMensaje('error', 'Escribe el nombre del producto.');
@@ -220,23 +467,23 @@ import Layout from '../layouts/Layout.astro';
     btnGuardar.textContent = 'Guardando...';
 
     try {
-      const res = await fetch(`${API_BASE}/productos`, {
-        method: 'POST',
+      const url = esEdicion ? `${API_BASE}/productos/${productoId}` : `${API_BASE}/productos`;
+      const method = esEdicion ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ nombre, receta }),
       });
       const json = await res.json();
 
       if (res.ok && json.exito) {
-        mostrarMensaje('exito', 'Producto creado correctamente.');
-        (document.getElementById('form-producto') as HTMLFormElement).reset();
-        document.getElementById('lista-receta').innerHTML = '';
-        document.getElementById('lista-receta').classList.add('hidden');
-        document.getElementById('receta-vacia').classList.remove('hidden');
+        mostrarMensaje('exito', 'Producto guardado correctamente.');
+        cerrarModalProducto();
+        cargarProductos();
       } else {
         const mensajes = json.errors
           ? Object.values(json.errors).flat().join('. ')
-          : json.mensaje || 'No se pudo crear el producto.';
+          : json.mensaje || 'No se pudo guardar el producto.';
         mostrarMensaje('error', mensajes);
       }
     } catch {
@@ -247,13 +494,231 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
+  async function verReceta(id) {
+    const modal = document.getElementById('modal-receta');
+    const contenido = document.getElementById('modal-receta-contenido');
+    const titulo = document.getElementById('titulo-modal-receta');
+    const detalle = document.getElementById('receta-detalle');
+    if (!detalle) return;
+
+    detalle.innerHTML = '<p class="text-sm text-texto-400">Cargando receta...</p>';
+
+    try {
+      const res = await fetch(`${API_BASE}/productos/${id}`);
+      const json = await res.json();
+      if (res.ok && json.exito) {
+        const producto = json.datos;
+        if (titulo) titulo.textContent = `Receta de ${producto.nombre}`;
+        if (!producto.insumos || producto.insumos.length === 0) {
+          detalle.innerHTML = '<p class="text-sm text-texto-500">Este producto no tiene receta.</p>';
+        } else {
+          detalle.innerHTML = producto.insumos.map((insumo) => `
+            <div class="flex items-center justify-between bg-superficie-50 border border-superficie-200 rounded-lg px-4 py-2">
+              <div>
+                <p class="text-sm font-medium text-texto-900">${insumo.nombre}</p>
+                <p class="text-xs text-texto-400">${insumo.unidad_medida}</p>
+              </div>
+              <span class="text-sm font-semibold text-texto-700">${formatSmartUnit(insumo.pivot?.cantidad || 0, insumo.unidad_medida)}</span>
+            </div>
+          `).join('');
+        }
+      }
+    } catch {
+      detalle.innerHTML = '<p class="text-sm text-texto-500">No se pudo cargar la receta.</p>';
+    }
+
+    modal?.classList.remove('hidden');
+    modal?.classList.add('flex');
+    setTimeout(() => {
+      contenido?.classList.remove('scale-95', 'opacity-0');
+      contenido?.classList.add('scale-100', 'opacity-100');
+    }, 10);
+  }
+
+  function cerrarModalReceta() {
+    const modal = document.getElementById('modal-receta');
+    const contenido = document.getElementById('modal-receta-contenido');
+    contenido?.classList.remove('scale-100', 'opacity-100');
+    contenido?.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+      modal?.classList.add('hidden');
+      modal?.classList.remove('flex');
+    }, 200);
+  }
+
+  document.getElementById('btn-crear-producto')?.addEventListener('click', () => abrirModalProducto());
+  document.getElementById('buscar-producto')?.addEventListener('input', (e) => {
+    estadoTabla.search = (e.target as HTMLInputElement).value;
+    cargarProductos();
+  });
+  document.getElementById('btn-cerrar-modal-producto')?.addEventListener('click', cerrarModalProducto);
+  document.getElementById('btn-cancelar-producto')?.addEventListener('click', cerrarModalProducto);
+  document.getElementById('btn-cerrar-modal-receta')?.addEventListener('click', cerrarModalReceta);
   document.getElementById('btn-agregar-insumo')?.addEventListener('click', () => agregarFilaReceta());
+
+  // Click: quitar fila o seleccionar opción del dropdown
   document.getElementById('lista-receta')?.addEventListener('click', (e) => {
     if ((e.target as HTMLElement).closest('.btn-quitar')) {
-      eliminarFilaReceta(e.target as HTMLElement);
+      eliminarFilaReceta(e.target);
+      return;
+    }
+    const opcion = (e.target as HTMLElement).closest('.opcion-insumo') as HTMLElement | null;
+    if (opcion) {
+      const fila = opcion.closest('[data-fila-id]');
+      const inputBuscar = fila?.querySelector('.input-buscar-insumo') as HTMLInputElement | null;
+      const inputId = fila?.querySelector('.input-insumo-id') as HTMLInputElement | null;
+      const dropdown = fila?.querySelector('.dropdown-insumos');
+      const inputCantidad = fila?.querySelector('.input-cantidad') as HTMLInputElement | null;
+      const helper = fila?.querySelector('.helper-unidad');
+      if (inputBuscar) inputBuscar.value = `${opcion.dataset.nombre} (${opcion.dataset.unidad})`;
+      if (inputId) inputId.value = opcion.dataset.id || '';
+      dropdown?.classList.add('hidden');
+      if (inputCantidad) {
+        if (opcion.dataset.unidad === 'piezas') {
+          inputCantidad.step = '1';
+          inputCantidad.min  = '1';
+          inputCantidad.placeholder = '0';
+        } else {
+          inputCantidad.step = 'any';
+          inputCantidad.min  = '0.0001';
+          inputCantidad.placeholder = '0.000';
+        }
+        const valor = parseFloat(inputCantidad.value || '0');
+        const unidad = opcion.dataset.unidad || '';
+        if (helper) {
+          const txt = formatSmartUnit(valor, unidad);
+          helper.textContent = (valor > 0 && valor < 1 && txt !== `${valor} ${unidad}`.trim())
+            ? `Equivale a: ${txt}` : '';
+        }
+      }
     }
   });
+
+  // Filtrar opciones al escribir
+  document.getElementById('lista-receta')?.addEventListener('input', (e) => {
+    const inputBuscar = (e.target as HTMLElement).closest('.input-buscar-insumo') as HTMLInputElement | null;
+    if (inputBuscar) {
+      const fila = inputBuscar.closest('[data-fila-id]');
+      const dropdown = fila?.querySelector('.dropdown-insumos');
+      const inputId = fila?.querySelector('.input-insumo-id') as HTMLInputElement | null;
+      if (inputId) inputId.value = '';
+      const texto = inputBuscar.value.toLowerCase();
+      if (dropdown) {
+        posicionarDropdown(inputBuscar, dropdown as HTMLElement);
+        dropdown.classList.remove('hidden');
+        dropdown.querySelectorAll('.opcion-insumo').forEach(op => {
+          (op as HTMLElement).style.display =
+            (op as HTMLElement).dataset.nombre?.toLowerCase().includes(texto) ? '' : 'none';
+        });
+      }
+    }
+    const inputCantidad = (e.target as HTMLElement).closest('.input-cantidad') as HTMLInputElement | null;
+    if (inputCantidad) {
+      const fila = inputCantidad.closest('[data-fila-id]');
+      const inputId = fila?.querySelector('.input-insumo-id') as HTMLInputElement | null;
+      const helper = fila?.querySelector('.helper-unidad');
+      const insumo = insumosDisponibles.find(i => i.id === parseInt(inputId?.value || '0'));
+      if (helper && insumo) {
+        const valor = parseFloat(inputCantidad.value || '0');
+        const txt = formatSmartUnit(valor, insumo.unidad_medida);
+        helper.textContent = (valor > 0 && valor < 1 && txt !== `${valor} ${insumo.unidad_medida}`.trim())
+          ? `Equivale a: ${txt}` : '';
+      }
+    }
+  });
+
+  // Posiciona el dropdown: abre hacia arriba si no hay suficiente espacio abajo
+  function posicionarDropdown(inputEl, dropdown) {
+    const rect = inputEl.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom - 8;
+    const spaceAbove = rect.top - 8;
+    const maxH = 208;
+
+    if (spaceBelow > spaceAbove && spaceBelow >= 150) {
+      // Hay más espacio abajo → abre hacia abajo
+      dropdown.style.top    = `${rect.bottom + 4}px`;
+      dropdown.style.maxHeight = `${Math.min(maxH, spaceBelow)}px`;
+    } else {
+      // Abre hacia arriba
+      dropdown.style.top    = `${rect.top - Math.min(maxH, spaceAbove) - 4}px`;
+      dropdown.style.maxHeight = `${Math.min(maxH, spaceAbove)}px`;
+    }
+    dropdown.style.left  = `${rect.left}px`;
+    dropdown.style.width = `${rect.width}px`;
+  }
+
+  // Mostrar dropdown al hacer foco
+  document.getElementById('lista-receta')?.addEventListener('focusin', (e) => {
+    const inputBuscar = (e.target as HTMLElement).closest('.input-buscar-insumo') as HTMLInputElement | null;
+    if (inputBuscar) {
+      const fila = inputBuscar.closest('[data-fila-id]');
+      const dropdown = fila?.querySelector('.dropdown-insumos') as HTMLElement | null;
+      if (dropdown) {
+        posicionarDropdown(inputBuscar, dropdown);
+        dropdown.classList.remove('hidden');
+        dropdown.querySelectorAll('.opcion-insumo').forEach(op => (op as HTMLElement).style.display = '');
+      }
+    }
+  });
+
+  // Cerrar dropdowns al clic fuera
+  document.addEventListener('click', (e) => {
+    if (!(e.target as HTMLElement).closest('[data-fila-id]')) {
+      document.querySelectorAll('.dropdown-insumos').forEach(d => d.classList.add('hidden'));
+    }
+  });
+
   document.getElementById('form-producto')?.addEventListener('submit', guardarProducto);
 
-  cargarInsumos();
+  document.getElementById('tbody-productos')?.addEventListener('click', (e) => {
+    const boton = e.target.closest('button[data-action]');
+    if (!boton) return;
+    const id = parseInt(boton.dataset.id || '0', 10);
+    if (!id) return;
+
+    if (boton.dataset.action === 'ver-receta') {
+      verReceta(id);
+    }
+    if (boton.dataset.action === 'editar') {
+      const producto = productos.find(p => p.id === id);
+      abrirModalProducto(producto);
+    }
+    if (boton.dataset.action === 'eliminar') {
+      eliminarProducto(id);
+    }
+  });
+
+  async function eliminarProducto(id) {
+    const result = await (window as any).Swal.fire({
+      title: '¿Eliminar producto?',
+      text: 'Se eliminara el producto y su receta.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#94a3b8',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/productos/${id}`, { method: 'DELETE' });
+      const json = await res.json();
+      if (res.ok && json.exito) {
+        await (window as any).Swal.fire({
+          title: 'Producto eliminado',
+          icon: 'success',
+          confirmButtonColor: '#059669',
+        });
+        cargarProductos();
+      } else {
+        await (window as any).Swal.fire('Error', json.mensaje || 'No se pudo eliminar.', 'error');
+      }
+    } catch {
+      await (window as any).Swal.fire('Error', 'No se pudo conectar con la API.', 'error');
+    }
+  }
+
+  Promise.all([cargarInsumos(), cargarProductos()]);
 </script>

@@ -46,6 +46,7 @@ class Insumo extends Model
         'stock_actual',
         'stock_minimo',
         'categoria',
+        'marca',
     ];
 
     /**

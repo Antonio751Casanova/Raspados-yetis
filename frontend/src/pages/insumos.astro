@@ -9,6 +9,19 @@
  * Envía:   POST /api/v1/insumos
  */
 import Layout from '../layouts/Layout.astro';
+
+const API_BASE = import.meta.env.PUBLIC_API_BASE ?? 'http://127.0.0.1:8001/api/v1';
+let categoriasIniciales: string[] = [];
+
+try {
+  const res = await fetch(`${API_BASE}/insumos?per_page=1`);
+  if (res.ok) {
+    const data = await res.json();
+    categoriasIniciales = data.categorias || [];
+  }
+} catch {
+  categoriasIniciales = [];
+}
 ---
 
 <Layout titulo="Insumos" descripcion="Gestión de materia prima — Raspados Yeti ERP">
@@ -34,17 +47,23 @@ import Layout from '../layouts/Layout.astro';
   <div class="bg-white rounded-xl border border-superficie-200 shadow-card overflow-hidden">
 
     <!-- Barra de búsqueda y filtros -->
-    <div class="px-6 py-4 border-b border-superficie-200 flex items-center justify-between bg-superficie-50/50">
-      <div class="relative">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-texto-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-        </svg>
-        <input type="text" id="buscar-insumo" placeholder="Buscar insumo..."
-               class="pl-10 pr-4 py-2 w-72 text-sm border border-superficie-200 rounded-lg bg-white
-                      focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400
-                      placeholder:text-texto-400" />
+    <div class="px-6 py-4 border-b border-superficie-200 bg-superficie-50/50">
+      <div class="flex justify-end items-center gap-3">
+        <select id="filtro-categoria"
+                class="h-10 px-3 text-sm border border-gray-200 rounded-lg bg-white text-gray-700
+                       focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400">
+          <option value="Todos">Todas las categorias</option>
+        </select>
+        <div class="relative w-full sm:max-w-xs">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-texto-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+          <input type="text" id="buscar-insumo" placeholder="Buscar por ID o nombre..."
+                 class="pl-10 pr-4 py-2 w-full text-sm border border-gray-200 rounded-lg bg-white
+                        focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400
+                        placeholder:text-texto-400" />
+        </div>
       </div>
-      <p id="contador-insumos" class="text-xs text-texto-400">Cargando...</p>
     </div>
 
     <!-- Tabla -->
@@ -55,8 +74,18 @@ import Layout from '../layouts/Layout.astro';
             <th class="text-left px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-texto-500">ID</th>
             <th class="text-left px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-texto-500">Nombre</th>
             <th class="text-left px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-texto-500">Unidad de Medida</th>
-            <th class="text-left px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-texto-500">Stock Actual</th>
-            <th class="text-right px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-texto-500">Costo Adquisición</th>
+            <th class="text-left px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-texto-500">
+              <button class="inline-flex items-center gap-1" data-sort="stock_actual" type="button">
+                STOCK ACTUAL
+                <span class="text-texto-400" data-sort-indicator="stock_actual"></span>
+              </button>
+            </th>
+            <th class="text-right px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-texto-500">
+              <button class="inline-flex items-center gap-1" data-sort="costo_adquisicion" type="button">
+                COSTO ADQUISICION
+                <span class="text-texto-400" data-sort-indicator="costo_adquisicion"></span>
+              </button>
+            </th>
             <th class="text-center px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-texto-500">Acciones</th>
           </tr>
         </thead>
@@ -75,9 +104,11 @@ import Layout from '../layouts/Layout.astro';
     </div>
 
     <!-- Paginación -->
-    <div class="px-6 py-4 border-t border-superficie-200 flex items-center justify-between bg-superficie-50/50">
-      <p id="info-paginacion" class="text-xs text-texto-400">—</p>
-      <div class="flex gap-1" id="controles-paginacion"></div>
+    <div class="px-6 py-4 border-t border-superficie-200 bg-superficie-50/50">
+      <div class="flex justify-between items-center w-full mt-4">
+        <p id="contador-insumos" class="text-sm text-gray-500">—</p>
+        <div class="flex gap-1" id="controles-paginacion"></div>
+      </div>
     </div>
   </div>
 
@@ -100,11 +131,12 @@ import Layout from '../layouts/Layout.astro';
       </div>
 
       <!-- Formulario -->
-      <form id="form-insumo" class="p-6 space-y-4">
+      <form id="form-insumo" class="p-6 space-y-4" autocomplete="off">
+        <input type="hidden" id="input-insumo-id" name="insumo_id" value="" />
         <!-- Nombre -->
         <div>
           <label for="input-nombre" class="block text-sm font-medium text-texto-700 mb-1.5">Nombre del insumo</label>
-          <input type="text" id="input-nombre" name="nombre" required
+          <input type="text" id="input-nombre" name="nombre" required autocomplete="off"
                  placeholder="Ej. Jarabe de Fresa"
                  class="w-full px-3 py-2.5 text-sm border border-superficie-200 rounded-lg bg-white
                         focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400
@@ -141,32 +173,72 @@ import Layout from '../layouts/Layout.astro';
           <p class="text-[11px] text-texto-400 mt-1">Precio por unidad de medida</p>
         </div>
 
-        <!-- Categoria -->
-        <div>
-          <label for="input-categoria" class="block text-sm font-medium text-texto-700 mb-1.5">Categoria</label>
-          <input type="text" id="input-categoria" name="categoria" required
-                 placeholder="Ej. Liquidos, Solidos, Desechables"
-                 class="w-full px-3 py-2.5 text-sm border border-superficie-200 rounded-lg bg-white
-                        focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400
-                        placeholder:text-texto-400" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Marca -->
+          <div>
+            <label for="input-marca" class="block text-sm font-medium text-texto-700 mb-1.5">Marca</label>
+                 <input type="text" id="input-marca" name="marca" required autocomplete="off"
+                   placeholder="Ej. Nestle, McCormick, Generica"
+                   class="w-full px-3 py-2.5 text-sm border border-superficie-200 rounded-lg bg-white
+                          focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400
+                          placeholder:text-texto-400" />
+          </div>
+          <!-- Categoria -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="categoria_select" class="block text-sm font-medium text-texto-700">Categoria</label>
+              <button type="button" id="btn_toggle_categoria" class="text-sm text-blue-600 hover:underline">
+                Crear nueva categoria
+              </button>
+            </div>
+            <div class="relative">
+              <select id="categoria_select" name="categoria"
+                      class="appearance-none bg-white border border-gray-300 text-gray-700 py-2 px-3 rounded-lg
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full">
+                <option value="" disabled selected>Seleccionar categoria</option>
+                {categoriasIniciales.map((categoria) => (
+                  <option value={categoria}>{categoria}</option>
+                ))}
+              </select>
+              <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 9l-7.5 7.5L4.5 9" />
+                </svg>
+              </span>
+            </div>
+            <input type="text" id="categoria_input" class="hidden w-full px-3 py-2.5 text-sm border border-superficie-200 rounded-lg bg-white
+                         focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400
+                         placeholder:text-texto-400" autocomplete="off"
+                   placeholder="Nombre de la nueva categoria" />
+          </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label for="input-stock-actual" class="block text-sm font-medium text-texto-700 mb-1.5">Stock Actual</label>
-            <input type="number" id="input-stock-actual" name="stock_actual" required
-                   step="0.01" min="0" placeholder="0.00"
-                   class="w-full px-3 py-2.5 text-sm border border-superficie-200 rounded-lg bg-white
-                          focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400
-                          placeholder:text-texto-400" />
+            <div class="flex">
+              <input type="number" id="input-stock-actual" name="stock_actual" required
+                     step="0.01" min="0" placeholder="0.00"
+                     class="w-full px-3 py-2.5 text-sm border border-superficie-200 rounded-l-lg bg-white
+                            focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400
+                            placeholder:text-texto-400" />
+              <span id="unidad-stock-actual" class="inline-flex items-center px-3 text-sm text-gray-400 bg-superficie-100 border border-l-0 border-superficie-200 rounded-r-lg">
+                --
+              </span>
+            </div>
           </div>
           <div>
             <label for="input-stock-minimo" class="block text-sm font-medium text-texto-700 mb-1.5">Stock Minimo</label>
-            <input type="number" id="input-stock-minimo" name="stock_minimo" required
-                   step="0.01" min="0" placeholder="0.00"
-                   class="w-full px-3 py-2.5 text-sm border border-superficie-200 rounded-lg bg-white
-                          focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400
-                          placeholder:text-texto-400" />
+            <div class="flex">
+              <input type="number" id="input-stock-minimo" name="stock_minimo" required
+                     step="0.01" min="0" placeholder="0.00"
+                     class="w-full px-3 py-2.5 text-sm border border-superficie-200 rounded-l-lg bg-white
+                            focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400
+                            placeholder:text-texto-400" />
+              <span id="unidad-stock-minimo" class="inline-flex items-center px-3 text-sm text-gray-400 bg-superficie-100 border border-l-0 border-superficie-200 rounded-r-lg">
+                --
+              </span>
+            </div>
           </div>
         </div>
 
@@ -205,10 +277,24 @@ import Layout from '../layouts/Layout.astro';
    */
 
   const API_BASE = 'http://127.0.0.1:8000/api/v1';
-  let todosLosInsumos: any[] = [];
+  let insumosPagina: any[] = [];
+  let categoriasDisponibles: string[] = [];
   let insumoEditandoId: number | null = null;
+  let totalInsumos = 0;
+  let estadoTabla = {
+    categoria: 'Todos',
+    sort: 'nombre',
+    order: 'asc',
+    page: 1,
+    query: '',
+  };
 
   function formatearCantidad(valor: number): string {
+    if (Number.isNaN(valor)) return '0';
+    return String(parseFloat(String(valor)));
+  }
+
+  function formatearMoneda(valor: number): string {
     if (Number.isNaN(valor)) return '0.00';
     return valor.toFixed(2);
   }
@@ -216,13 +302,27 @@ import Layout from '../layouts/Layout.astro';
   // ── Cargar insumos ──────────────────────────────────
   async function cargarInsumos() {
     try {
-      const res = await fetch(`${API_BASE}/insumos?per_page=100`);
+      const params = new URLSearchParams();
+      if (estadoTabla.categoria && estadoTabla.categoria !== 'Todos') {
+        params.set('categoria', estadoTabla.categoria);
+      }
+      if (estadoTabla.sort) params.set('sort', estadoTabla.sort);
+      if (estadoTabla.order) params.set('order', estadoTabla.order);
+      if (estadoTabla.page) params.set('page', String(estadoTabla.page));
+      if (estadoTabla.query) params.set('search', estadoTabla.query);
+
+      const res = await fetch(`${API_BASE}/insumos?${params.toString()}`);
       const json = await res.json();
 
       if (json.exito) {
-        todosLosInsumos = json.datos.data;
-        renderizarTabla(todosLosInsumos);
-        actualizarContador(json.datos.total);
+        insumosPagina = json.datos.data;
+        categoriasDisponibles = json.categorias || [];
+        totalInsumos = json.datos.total || 0;
+        renderizarCategorias();
+        renderizarTabla(insumosPagina);
+        actualizarContador(totalInsumos);
+        actualizarPaginacion(json.datos);
+        actualizarIndicadoresOrden();
       }
     } catch {
       const tbody = document.getElementById('tbody-insumos');
@@ -267,9 +367,15 @@ import Layout from '../layouts/Layout.astro';
     tbody.innerHTML = insumos.map(insumo => {
       const stockActual = parseFloat(insumo.stock_actual ?? 0);
       const stockMinimo = parseFloat(insumo.stock_minimo ?? 0);
-      const badge = stockActual <= stockMinimo
-        ? '<span class="ml-2 inline-flex items-center rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-[10px] font-semibold border border-amber-200">Bajo Stock</span>'
-        : '';
+      const alertaStock = stockActual <= stockMinimo;
+      const alertaHtml = alertaStock
+        ? `<span class="text-red-600 font-bold flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+            ${formatearCantidad(stockActual)} ${insumo.unidad_medida}
+          </span>`
+        : `<span class="text-sm font-semibold text-texto-900">${formatearCantidad(stockActual)} ${insumo.unidad_medida}</span>`;
       return `
       <tr class="hover:bg-superficie-50/80" data-id="${insumo.id}">
         <td class="px-6 py-4">
@@ -287,8 +393,7 @@ import Layout from '../layouts/Layout.astro';
         </td>
         <td class="px-6 py-4">
           <div class="flex items-center">
-            <span class="text-sm font-semibold text-texto-900">${formatearCantidad(stockActual)} ${insumo.unidad_medida}</span>
-            ${badge}
+            ${alertaHtml}
           </div>
         </td>
         <td class="px-6 py-4 text-right">
@@ -335,18 +440,201 @@ import Layout from '../layouts/Layout.astro';
   // ── Actualizar contador ─────────────────────────────
   function actualizarContador(total: number) {
     const el = document.getElementById('contador-insumos');
-    if (el) el.textContent = `${total} insumo${total !== 1 ? 's' : ''} registrado${total !== 1 ? 's' : ''}`;
+    if (el) el.textContent = `Mostrando ${total} insumo${total !== 1 ? 's' : ''} en total`;
+  }
+
+  function renderizarCategorias() {
+    const select = document.getElementById('filtro-categoria') as HTMLSelectElement | null;
+    const selectModal = document.getElementById('categoria_select') as HTMLSelectElement | null;
+    if (!select) return;
+
+    const categorias = ['Todos', ...categoriasDisponibles];
+    select.innerHTML = categorias.map((categoria) =>
+      `<option value="${categoria}">${categoria === 'Todos' ? 'Todas las categorias' : categoria}</option>`
+    ).join('');
+    select.value = estadoTabla.categoria;
+
+    if (selectModal) {
+      const opciones = ['<option value="" disabled>Seleccionar categoria</option>'];
+      categoriasDisponibles.forEach((categoria) => {
+        opciones.push(`<option value="${categoria}">${categoria}</option>`);
+      });
+      selectModal.innerHTML = opciones.join('');
+    }
+  }
+
+  function actualizarPaginacion(meta: any) {
+    const contenedor = document.getElementById('controles-paginacion');
+    if (!contenedor) return;
+
+    const prevPage = obtenerPaginaDesdeUrl(meta.prev_page_url);
+    const nextPage = obtenerPaginaDesdeUrl(meta.next_page_url);
+
+    contenedor.innerHTML = `
+      <button type="button" data-page="${prevPage || ''}" ${prevPage ? '' : 'disabled'}
+              class="px-3 py-1.5 text-xs font-semibold rounded-lg border
+                     ${prevPage ? 'bg-white text-texto-700 border-superficie-200 hover:bg-superficie-100' : 'bg-superficie-100 text-texto-300 border-superficie-200 cursor-not-allowed'}">
+        Anterior
+      </button>
+      <button type="button" data-page="${nextPage || ''}" ${nextPage ? '' : 'disabled'}
+              class="px-3 py-1.5 text-xs font-semibold rounded-lg border
+                     ${nextPage ? 'bg-white text-texto-700 border-superficie-200 hover:bg-superficie-100' : 'bg-superficie-100 text-texto-300 border-superficie-200 cursor-not-allowed'}">
+        Siguiente
+      </button>
+    `;
+  }
+
+  function obtenerPaginaDesdeUrl(url: string | null): number | null {
+    if (!url) return null;
+    try {
+      const parsed = new URL(url);
+      const page = parseInt(parsed.searchParams.get('page') || '1', 10);
+      return Number.isNaN(page) ? null : page;
+    } catch {
+      return null;
+    }
+  }
+
+  function actualizarIndicadoresOrden() {
+    const iconoNeutro = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15L12 18.75 15.75 15M12 18.75V5.25M15.75 9L12 5.25 8.25 9" />
+      </svg>`;
+    const iconoAsc = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 15.75L12 8.25l-7.5 7.5" />
+      </svg>`;
+    const iconoDesc = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 8.25L12 15.75l7.5-7.5" />
+      </svg>`;
+    document.querySelectorAll('[data-sort-indicator]')?.forEach((el) => {
+      const indicador = el as HTMLElement;
+      const sortKey = indicador.dataset.sortIndicator;
+      if (sortKey === estadoTabla.sort) {
+        indicador.innerHTML = estadoTabla.order === 'asc' ? iconoAsc : iconoDesc;
+        indicador.classList.remove('text-texto-400');
+        indicador.classList.add('text-blue-600');
+      } else {
+        indicador.innerHTML = iconoNeutro;
+        indicador.classList.remove('text-blue-600');
+        indicador.classList.add('text-texto-400');
+      }
+    });
   }
 
   // ── Búsqueda en tiempo real ─────────────────────────
   document.getElementById('buscar-insumo')?.addEventListener('input', (e) => {
-    const query = (e.target as HTMLInputElement).value.toLowerCase();
-    const filtrados = todosLosInsumos.filter(i =>
-      i.nombre.toLowerCase().includes(query) ||
-      i.unidad_medida.toLowerCase().includes(query) ||
-      (i.categoria || '').toLowerCase().includes(query)
-    );
-    renderizarTabla(filtrados);
+    estadoTabla.query = (e.target as HTMLInputElement).value;
+    estadoTabla.page = 1;
+    cargarInsumos();
+  });
+
+  document.getElementById('filtro-categoria')?.addEventListener('change', (e) => {
+    const select = e.target as HTMLSelectElement;
+    estadoTabla.categoria = select.value || 'Todos';
+    estadoTabla.page = 1;
+    cargarInsumos();
+  });
+
+  document.querySelectorAll('button[data-sort]')?.forEach((boton) => {
+    boton.addEventListener('click', () => {
+      const sortKey = (boton as HTMLButtonElement).dataset.sort;
+      if (!sortKey) return;
+      if (estadoTabla.sort === sortKey) {
+        estadoTabla.order = estadoTabla.order === 'asc' ? 'desc' : 'asc';
+      } else {
+        estadoTabla.sort = sortKey;
+        estadoTabla.order = 'asc';
+      }
+      estadoTabla.page = 1;
+      cargarInsumos();
+    });
+  });
+
+  document.getElementById('controles-paginacion')?.addEventListener('click', (e) => {
+    const boton = (e.target as HTMLElement).closest('button[data-page]') as HTMLButtonElement | null;
+    if (!boton || boton.disabled) return;
+    const page = parseInt(boton.dataset.page || '1', 10);
+    if (Number.isNaN(page)) return;
+    estadoTabla.page = page;
+    cargarInsumos();
+  });
+
+  function actualizarUnidadesStock() {
+    const unidadSeleccionada = (document.getElementById('input-unidad') as HTMLSelectElement)?.value || '';
+    const unidad = unidadSeleccionada ? unidadSeleccionada : '--';
+    const actual = document.getElementById('unidad-stock-actual');
+    const minimo = document.getElementById('unidad-stock-minimo');
+    const inputActual = document.getElementById('input-stock-actual') as HTMLInputElement | null;
+    const inputMinimo = document.getElementById('input-stock-minimo') as HTMLInputElement | null;
+    if (actual) {
+      actual.textContent = unidad;
+      actual.classList.toggle('text-gray-400', !unidadSeleccionada);
+      actual.classList.toggle('text-texto-500', !!unidadSeleccionada);
+    }
+    if (minimo) {
+      minimo.textContent = unidad;
+      minimo.classList.toggle('text-gray-400', !unidadSeleccionada);
+      minimo.classList.toggle('text-texto-500', !!unidadSeleccionada);
+    }
+    if (inputActual && inputMinimo) {
+      const step = unidadSeleccionada === 'piezas' ? '1' : '0.01';
+      inputActual.step = step;
+      inputMinimo.step = step;
+      if (unidadSeleccionada === 'piezas') {
+        if (inputActual.value) {
+          inputActual.value = String(Math.floor(parseFloat(inputActual.value)) || 0);
+        }
+        if (inputMinimo.value) {
+          inputMinimo.value = String(Math.floor(parseFloat(inputMinimo.value)) || 0);
+        }
+      } else if (unidadSeleccionada) {
+        if (inputActual.value) {
+          inputActual.value = String(parseFloat(inputActual.value));
+        }
+        if (inputMinimo.value) {
+          inputMinimo.value = String(parseFloat(inputMinimo.value));
+        }
+      }
+    }
+  }
+
+  document.getElementById('input-unidad')?.addEventListener('change', actualizarUnidadesStock);
+
+  function activarCategoriaNueva() {
+    const select = document.getElementById('categoria_select') as HTMLSelectElement | null;
+    const input = document.getElementById('categoria_input') as HTMLInputElement | null;
+    const toggle = document.getElementById('btn_toggle_categoria') as HTMLButtonElement | null;
+    if (!select || !input || !toggle) return;
+    input.classList.remove('hidden');
+    select.classList.add('hidden');
+    toggle.textContent = 'Usar existente';
+    input.value = '';
+    select.removeAttribute('name');
+    input.setAttribute('name', 'categoria');
+    input.focus();
+  }
+
+  function activarCategoriaExistente() {
+    const select = document.getElementById('categoria_select') as HTMLSelectElement | null;
+    const input = document.getElementById('categoria_input') as HTMLInputElement | null;
+    const toggle = document.getElementById('btn_toggle_categoria') as HTMLButtonElement | null;
+    if (!select || !input || !toggle) return;
+    input.classList.add('hidden');
+    select.classList.remove('hidden');
+    toggle.textContent = 'Crear nueva categoria';
+    input.removeAttribute('name');
+    select.setAttribute('name', 'categoria');
+  }
+
+  document.getElementById('btn_toggle_categoria')?.addEventListener('click', () => {
+    const input = document.getElementById('categoria_input');
+    if (input?.classList.contains('hidden')) {
+      activarCategoriaNueva();
+    } else {
+      activarCategoriaExistente();
+    }
   });
 
   // ── Modal: Abrir / Cerrar ──────────────────────────
@@ -360,24 +648,43 @@ import Layout from '../layouts/Layout.astro';
 
     if (insumo) {
       insumoEditandoId = insumo.id;
+      (document.getElementById('input-insumo-id') as HTMLInputElement).value = String(insumo.id || '');
       if (titulo) titulo.textContent = 'Editar Insumo';
       if (btnGuardar) btnGuardar.textContent = 'Actualizar Insumo';
 
       (document.getElementById('input-nombre') as HTMLInputElement).value = insumo.nombre || '';
       (document.getElementById('input-unidad') as HTMLSelectElement).value = insumo.unidad_medida || '';
-      (document.getElementById('input-costo') as HTMLInputElement).value = formatearCantidad(parseFloat(insumo.costo_adquisicion || 0));
-      (document.getElementById('input-categoria') as HTMLInputElement).value = insumo.categoria || 'General';
+      (document.getElementById('input-costo') as HTMLInputElement).value = formatearMoneda(parseFloat(insumo.costo_adquisicion || 0));
+      const selectCategoria = document.getElementById('categoria_select') as HTMLSelectElement | null;
+      const inputCategoria = document.getElementById('categoria_input') as HTMLInputElement | null;
+      if (selectCategoria && insumo.categoria && Array.from(selectCategoria.options).some(opt => opt.value === insumo.categoria)) {
+        activarCategoriaExistente();
+        selectCategoria.value = insumo.categoria;
+        if (inputCategoria) inputCategoria.value = '';
+      } else {
+        activarCategoriaNueva();
+        if (inputCategoria) inputCategoria.value = insumo.categoria || '';
+      }
+      (document.getElementById('input-marca') as HTMLInputElement).value = insumo.marca || '';
       (document.getElementById('input-stock-actual') as HTMLInputElement).value = formatearCantidad(parseFloat(insumo.stock_actual || 0));
       (document.getElementById('input-stock-minimo') as HTMLInputElement).value = formatearCantidad(parseFloat(insumo.stock_minimo || 0));
     } else {
       insumoEditandoId = null;
-      if (titulo) titulo.textContent = 'Nuevo Insumo';
+      (document.getElementById('input-insumo-id') as HTMLInputElement).value = '';
+      if (titulo) titulo.textContent = 'Agregar Nuevo Insumo';
       if (btnGuardar) btnGuardar.textContent = 'Guardar Insumo';
       (document.getElementById('form-insumo') as HTMLFormElement)?.reset();
-      (document.getElementById('input-categoria') as HTMLInputElement).value = 'General';
+      activarCategoriaExistente();
+      const selectCategoria = document.getElementById('categoria_select') as HTMLSelectElement | null;
+      if (selectCategoria) selectCategoria.selectedIndex = 0;
+      const inputCategoria = document.getElementById('categoria_input') as HTMLInputElement | null;
+      if (inputCategoria) inputCategoria.value = '';
+      (document.getElementById('input-marca') as HTMLInputElement).value = '';
       (document.getElementById('input-stock-actual') as HTMLInputElement).value = '0.00';
       (document.getElementById('input-stock-minimo') as HTMLInputElement).value = '0.00';
     }
+
+    actualizarUnidadesStock();
 
     modalOverlay?.classList.remove('hidden');
     modalOverlay?.classList.add('flex');
@@ -417,7 +724,9 @@ import Layout from '../layouts/Layout.astro';
     const nombre = (document.getElementById('input-nombre') as HTMLInputElement).value;
     const unidad = (document.getElementById('input-unidad') as HTMLSelectElement).value;
     const costo = parseFloat((document.getElementById('input-costo') as HTMLInputElement).value);
-    const categoria = (document.getElementById('input-categoria') as HTMLInputElement).value;
+    const categoriaField = document.querySelector('[name="categoria"]') as HTMLInputElement | HTMLSelectElement | null;
+    const categoria = categoriaField?.value || '';
+    const marca = (document.getElementById('input-marca') as HTMLInputElement).value;
     const stockActual = parseFloat((document.getElementById('input-stock-actual') as HTMLInputElement).value);
     const stockMinimo = parseFloat((document.getElementById('input-stock-minimo') as HTMLInputElement).value);
 
@@ -428,16 +737,19 @@ import Layout from '../layouts/Layout.astro';
     const esEdicion = insumoEditandoId !== null;
 
     try {
-      const endpoint = esEdicion ? `${API_BASE}/insumos/${insumoEditandoId}` : `${API_BASE}/insumos`;
-      const metodo = esEdicion ? 'PUT' : 'POST';
-      const res = await fetch(endpoint, {
-        method: metodo,
+      const insumoId = (document.getElementById('input-insumo-id') as HTMLInputElement).value;
+      const esEdicionReal = Boolean(insumoId);
+      const url = esEdicionReal ? `${API_BASE}/insumos/${insumoId}` : `${API_BASE}/insumos`;
+      const method = esEdicionReal ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({
           nombre,
           unidad_medida: unidad,
           costo_adquisicion: costo,
           categoria,
+          marca,
           stock_actual: stockActual,
           stock_minimo: stockMinimo,
         }),
@@ -445,14 +757,22 @@ import Layout from '../layouts/Layout.astro';
 
       const json = await res.json();
 
-      if (res.ok && json.exito) {
+      if (!res.ok) {
+        const mensajes = json.errors
+          ? Object.values(json.errors).flat().join('. ')
+          : json.message || json.mensaje || 'Error al guardar el insumo.';
+        if (errorDiv) {
+          errorDiv.textContent = mensajes;
+          errorDiv.classList.remove('hidden');
+        }
+        return;
+      }
+
+      if (json.exito) {
         cerrarModal();
         cargarInsumos(); // Recargar tabla
       } else {
-        // Mostrar errores de validación
-        const mensajes = json.errors
-          ? Object.values(json.errors).flat().join('. ')
-          : json.mensaje || 'Error al guardar el insumo.';
+        const mensajes = json.mensaje || 'Error al guardar el insumo.';
         if (errorDiv) {
           errorDiv.textContent = mensajes;
           errorDiv.classList.remove('hidden');
@@ -465,12 +785,12 @@ import Layout from '../layouts/Layout.astro';
       }
     } finally {
       btnGuardar.disabled = false;
-      btnGuardar.textContent = esEdicion ? 'Actualizar Insumo' : 'Guardar Insumo';
+      btnGuardar.textContent = esEdicionReal ? 'Actualizar Insumo' : 'Guardar Insumo';
     }
   });
 
   function buscarInsumo(id: number) {
-    return todosLosInsumos.find(i => i.id === id);
+    return insumosPagina.find(i => i.id === id);
   }
 
   function editarInsumo(id: number) {
@@ -481,19 +801,90 @@ import Layout from '../layouts/Layout.astro';
 
   // ── Eliminar insumo ─────────────────────────────────
   async function eliminarInsumo(id: number, nombre: string) {
-    if (!confirm(`¿Estás seguro de eliminar "${nombre}"? Esta acción no se puede deshacer.`)) return;
+    const result = await (window as any).Swal.fire({
+      title: '¿Estás seguro?',
+      text: `Se eliminará "${nombre}"`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#94a3b8',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       const res = await fetch(`${API_BASE}/insumos/${id}`, {
         method: 'DELETE',
         headers: { 'Accept': 'application/json' },
       });
+      const data = await res.json();
 
-      if (res.ok) {
-        cargarInsumos();
+      if (res.status === 409) {
+        const listaProductos = (data.productos || []).join(', ');
+        const confirmacion = await (window as any).Swal.fire({
+          title: '¡Advertencia de Impacto!',
+          html: `Este insumo es ingrediente de: <strong>${listaProductos || 'productos existentes'}</strong>.<br><br>Si lo eliminas, desaparecerá de sus recetas. ¿Deseas eliminarlo de todas formas?`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, forzar eliminación',
+          confirmButtonColor: '#d33',
+          cancelButtonText: 'Cancelar',
+        });
+
+        if (!confirmacion.isConfirmed) return;
+
+        const resForzar = await fetch(`${API_BASE}/insumos/${id}?force=true`, {
+          method: 'DELETE',
+          headers: { 'Accept': 'application/json' },
+        });
+        const dataForzar = await resForzar.json();
+
+        if (resForzar.ok && dataForzar.exito) {
+          await (window as any).Swal.fire({
+            title: 'Insumo eliminado',
+            text: `"${nombre}" fue eliminado correctamente.`,
+            icon: 'success',
+            confirmButtonColor: '#059669',
+          });
+          cargarInsumos();
+          return;
+        }
+
+        await (window as any).Swal.fire({
+          title: 'Error',
+          text: dataForzar.mensaje || 'No se pudo eliminar el insumo.',
+          icon: 'error',
+          confirmButtonColor: '#dc2626',
+        });
+        return;
       }
+
+      if (res.ok && data.exito) {
+        await (window as any).Swal.fire({
+          title: 'Insumo eliminado',
+          text: `"${nombre}" fue eliminado correctamente.`,
+          icon: 'success',
+          confirmButtonColor: '#059669',
+        });
+        cargarInsumos();
+        return;
+      }
+
+      await (window as any).Swal.fire({
+        title: 'Error',
+        text: data.mensaje || 'No se pudo eliminar el insumo.',
+        icon: 'error',
+        confirmButtonColor: '#dc2626',
+      });
     } catch {
-      alert('Error al eliminar el insumo.');
+      await (window as any).Swal.fire({
+        title: 'Error de conexión',
+        text: 'No se pudo contactar con el servidor.',
+        icon: 'error',
+        confirmButtonColor: '#dc2626',
+      });
     }
   }
 

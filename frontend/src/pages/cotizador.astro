@@ -15,30 +15,102 @@ import Layout from '../layouts/Layout.astro';
 <Layout titulo="Cotizador" descripcion="Motor de Costeo - Calcula el costo de produccion de tus snacks">
 
   <!-- Cabecera -->
-  <div class="mb-8">
+  <div class="mb-6">
     <h3 class="text-2xl font-bold text-texto-900">Motor de Costeo</h3>
-    <p class="text-texto-500 mt-1">Agrega productos a la lista y guarda la cotizacion del evento</p>
+    <p class="text-texto-500 mt-1">Define los parámetros del evento y arma tu paquete de productos</p>
   </div>
 
+  <!-- ═══ PASO 1: CONFIGURACIÓN DEL EVENTO ═══ -->
+  <div class="bg-white rounded-xl border border-superficie-200 shadow-card p-6 mb-8">
+    <div class="flex items-center gap-2 mb-5">
+      <div class="w-7 h-7 rounded-lg bg-yeti-100 flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-yeti-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </div>
+      <h4 class="text-sm font-semibold text-texto-900 uppercase tracking-wide">Paso 1 — Configuración del Evento</h4>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div>
+        <label for="input-cliente-top" class="block text-sm font-medium text-texto-700 mb-1.5">Nombre del Cliente / Empresa</label>
+        <input type="text" id="input-cliente-top" placeholder="Ej. Ana Rodríguez"
+               class="w-full px-3 py-2.5 text-sm border border-superficie-200 rounded-lg bg-white
+                      focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400 placeholder:text-texto-400" />
+      </div>
+      <div>
+        <label for="input-fecha-top" class="block text-sm font-medium text-texto-700 mb-1.5">Fecha del Evento</label>
+        <input type="date" id="input-fecha-top"
+               class="w-full px-3 py-2.5 text-sm border border-superficie-200 rounded-lg bg-white
+                      focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400" />
+      </div>
+      <div>
+        <label for="input-invitados-top" class="block text-sm font-medium text-texto-700 mb-1.5">
+          Número de Invitados <span class="text-red-500">*</span>
+        </label>
+        <div class="relative">
+          <input type="number" id="input-invitados-top" min="1" step="1" placeholder="Ej. 50"
+                 class="w-full pl-3 pr-10 py-2.5 text-sm border-2 border-yeti-300 rounded-lg bg-white font-semibold
+                        focus:outline-none focus:ring-2 focus:ring-yeti-500/40 focus:border-yeti-500 placeholder:font-normal placeholder:text-texto-400" />
+          <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-yeti-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+        </div>
+        <p class="text-[11px] text-yeti-600 mt-1 font-medium">Las porciones se sugieren a partir de este número</p>
+      </div>
+      <div>
+        <label for="input-distancia-top" class="block text-sm font-medium text-texto-700 mb-1.5">Distancia Estimada (km)</label>
+        <div class="relative">
+          <input type="number" id="input-distancia-top" min="0" step="0.5" placeholder="Ej. 15"
+                 class="w-full pl-3 pr-10 py-2.5 text-sm border border-superficie-200 rounded-lg bg-white
+                        focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400 placeholder:text-texto-400" />
+          <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-texto-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+        <p class="text-[11px] text-texto-400 mt-1">Déjalo en blanco para aplicar una tarifa base aproximada.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PASO 2: CATÁLOGO + CARRITO ═══ -->
   <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
 
-    <!-- COLUMNA IZQUIERDA: Selector de producto -->
-    <div class="lg:col-span-2 space-y-6">
+    <!-- COLUMNA IZQUIERDA: Catálogo (con overlay de bloqueo) -->
+    <div class="lg:col-span-2 space-y-6 relative">
+
+      <!-- Overlay de bloqueo -->
+      <div id="catalogo-overlay"
+           class="absolute inset-0 z-10 rounded-xl flex flex-col items-center justify-start pt-16 bg-white/80 backdrop-blur-[2px]">
+        <div class="w-14 h-14 rounded-full bg-yeti-50 border-2 border-yeti-200 flex items-center justify-center mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-yeti-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </div>
+        <p class="text-sm font-semibold text-texto-700 text-center">Define el Número de Invitados</p>
+        <p class="text-xs text-texto-500 mt-1 text-center max-w-[200px]">para comenzar a armar el paquete</p>
+      </div>
 
       <!-- Selector de producto -->
       <div class="bg-white rounded-xl border border-superficie-200 shadow-card p-6">
-        <label class="block text-sm font-semibold text-texto-900 mb-3">Agregar Productos</label>
-
-        <!-- Estado de carga del selector -->
+        <label class="block text-sm font-semibold text-texto-900 mb-3">Paso 2 — Agregar Productos</label>
+        <!-- Buscador -->
+        <div class="relative mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-texto-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+          <input type="text" id="buscar-producto-cotizador" placeholder="Buscar producto..."
+                 class="w-full pl-10 pr-4 py-2 text-sm border border-superficie-200 rounded-lg bg-white
+                        focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400 placeholder:text-texto-400" />
+        </div>
         <div id="selector-carga" class="flex items-center gap-3 py-3">
           <div class="w-5 h-5 border-2 border-yeti-300 border-t-transparent rounded-full animate-spin"></div>
           <span class="text-sm text-texto-400">Cargando productos...</span>
         </div>
-
-        <!-- Lista de productos como tarjetas seleccionables -->
         <div id="lista-productos" class="space-y-2 hidden"></div>
-
-        <!-- Estado vacío -->
         <div id="productos-vacio" class="hidden text-center py-6">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-superficie-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
@@ -47,8 +119,6 @@ import Layout from '../layouts/Layout.astro';
           <p class="text-sm text-texto-500">No hay productos registrados</p>
           <p class="text-xs text-texto-400 mt-1">Crea productos con recetas desde la vista de productos</p>
         </div>
-
-        <!-- Error de conexión -->
         <div id="productos-error" class="hidden text-center py-6">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-red-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
@@ -240,7 +310,7 @@ import Layout from '../layouts/Layout.astro';
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label for="input-distancia" class="block text-sm font-medium text-texto-700 mb-1.5">Distancia (KM)</label>
-          <input type="number" id="input-distancia" min="0" max="500" step="0.5" value="10"
+             <input type="number" id="input-distancia" min="0" max="500" step="0.5"
                  class="w-full px-3 py-2.5 text-sm border border-superficie-200 rounded-lg bg-white
                         focus:outline-none focus:ring-2 focus:ring-yeti-500/30 focus:border-yeti-400" />
         </div>
@@ -262,6 +332,34 @@ import Layout from '../layouts/Layout.astro';
           💾 Guardar y Crear Cotizacion
         </button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Fraccionamiento de Paquete -->
+<div id="modal-fraccion" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/30 backdrop-blur-sm">
+  <div id="modal-fraccion-contenido" class="bg-white rounded-2xl shadow-panel w-full max-w-md mx-4 transform scale-95 opacity-0"
+       style="transition: transform 200ms ease-out, opacity 200ms ease-out;">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-superficie-200">
+      <h4 id="fraccion-titulo" class="text-base font-semibold text-texto-900">Agregar Producto</h4>
+      <button id="btn-cerrar-fraccion" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-superficie-100 text-texto-400 hover:text-texto-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+    </div>
+    <div class="p-6 space-y-4">
+      <div>
+        <label for="fraccion-cantidad" class="block text-sm font-medium text-texto-700 mb-1.5">Cantidad a preparar</label>
+        <input type="number" id="fraccion-cantidad" min="1" step="1"
+               class="w-full px-3 py-2.5 text-sm border-2 border-yeti-300 rounded-lg bg-white font-semibold
+                      focus:outline-none focus:ring-2 focus:ring-yeti-500/40 focus:border-yeti-500" />
+      </div>
+      <div id="fraccion-preview" class="bg-superficie-50 border border-superficie-200 rounded-lg p-4 min-h-[80px]">
+        <p class="text-xs text-texto-400">Selecciona una cantidad para ver los insumos requeridos.</p>
+      </div>
+      <button id="btn-confirmar-fraccion"
+              class="w-full py-2.5 text-sm font-semibold text-white bg-yeti-600 rounded-lg hover:bg-yeti-700 shadow-sm">
+        Añadir a la Cotización
+      </button>
     </div>
   </div>
 </div>
@@ -321,14 +419,104 @@ import Layout from '../layouts/Layout.astro';
     `).join('');
   }
 
+  // Cache completo de productos con insumos
+  const productosDetalleCache = new Map<number, any>();
+
+  function formatSmartUnit(cantidad: number, unidad: string): string {
+    const u = (unidad || '').toLowerCase();
+    if (u.includes('kg') && cantidad < 1) return `${+(cantidad * 1000).toFixed(3)} g`;
+    if (u.includes('litros') && cantidad < 1) return `${+(cantidad * 1000).toFixed(1)} ml`;
+    return `${+cantidad.toFixed(4)} ${unidad}`;
+  }
+
+  // Estado del modal de fracción
+  let fraccionProductoId: number | null = null;
+
+  async function abrirModalFraccion(id: number) {
+    const producto = productosDisponibles.find(p => p.id === id);
+    if (!producto) return;
+    fraccionProductoId = id;
+    const invitados = obtenerInvitados();
+    const cantidadSugerida = invitados > 0 ? invitados : 1;
+
+    const tituloEl = document.getElementById('fraccion-titulo');
+    if (tituloEl) tituloEl.textContent = `Agregar: ${producto.nombre}`;
+    const inputCant = document.getElementById('fraccion-cantidad') as HTMLInputElement;
+    if (inputCant) inputCant.value = String(cantidadSugerida);
+
+    // Cargar detalle con insumos si no está en caché
+    if (!productosDetalleCache.has(id)) {
+      try {
+        const res = await fetch(`${API_BASE}/productos/${id}`);
+        const json = await res.json();
+        if (json.exito) productosDetalleCache.set(id, json.datos);
+      } catch { /* sin detalle */ }
+    }
+    actualizarPreviewInsumos(cantidadSugerida);
+
+    const overlay = document.getElementById('modal-fraccion');
+    const contenido = document.getElementById('modal-fraccion-contenido');
+    overlay?.classList.remove('hidden');
+    overlay?.classList.add('flex');
+    setTimeout(() => {
+      contenido?.classList.remove('scale-95', 'opacity-0');
+      contenido?.classList.add('scale-100', 'opacity-100');
+    }, 10);
+  }
+
+  function cerrarModalFraccion() {
+    const overlay = document.getElementById('modal-fraccion');
+    const contenido = document.getElementById('modal-fraccion-contenido');
+    contenido?.classList.remove('scale-100', 'opacity-100');
+    contenido?.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => { overlay?.classList.add('hidden'); overlay?.classList.remove('flex'); }, 200);
+  }
+
+  function actualizarPreviewInsumos(cantidad: number) {
+    const preview = document.getElementById('fraccion-preview');
+    if (!preview || !fraccionProductoId) return;
+    const detalle = productosDetalleCache.get(fraccionProductoId);
+    if (!detalle?.insumos?.length) {
+      preview.innerHTML = '<p class="text-xs text-texto-400">Sin detalle de insumos disponible.</p>';
+      return;
+    }
+    preview.innerHTML = `
+      <p class="text-xs font-semibold text-texto-700 mb-2">Para <span class="text-yeti-600">${cantidad}</span> porciones se ocuparán:</p>
+      <ul class="space-y-1">
+        ${detalle.insumos.map((ins: any) => {
+          const total = (parseFloat(ins.pivot?.cantidad || 0)) * cantidad;
+          return `<li class="text-xs text-texto-600 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-yeti-400 shrink-0"></span>
+            <span class="font-medium">${formatSmartUnit(total, ins.unidad_medida)}</span> de ${ins.nombre}
+          </li>`;
+        }).join('')}
+      </ul>`;
+  }
+
+  function obtenerInvitados(): number {
+    return Math.max(0, parseInt((document.getElementById('input-invitados-top') as HTMLInputElement)?.value || '0') || 0);
+  }
+
+  function actualizarBadgeInvitados() {
+    const invitados = obtenerInvitados();
+    setText('resultado-invitados-badge', `${invitados} invitados`);
+  }
+
+  function actualizarEstadoCatalogo() {
+    const overlay = document.getElementById('catalogo-overlay') as HTMLElement | null;
+    if (overlay) overlay.style.display = obtenerInvitados() > 0 ? 'none' : 'flex';
+  }
+
   function agregarProducto(id: number) {
     const producto = productosDisponibles.find(p => p.id === id);
     if (!producto) return;
+    const invitados = obtenerInvitados();
+    const cantidadInicial = invitados > 0 ? invitados : 1;
     const existente = carrito.find(item => item.producto_id === id);
     if (existente) {
-      existente.cantidad += 1;
+      existente.cantidad += cantidadInicial;
     } else {
-      carrito.push({ producto_id: id, nombre: producto.nombre, cantidad: 1 });
+      carrito.push({ producto_id: id, nombre: producto.nombre, cantidad: cantidadInicial });
     }
     renderizarCarrito();
     actualizarTotales();
@@ -374,7 +562,13 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function obtenerParametrosEvento() {
-    const distancia = parseFloat((document.getElementById('input-distancia') as HTMLInputElement)?.value) || 0;
+    const distanciaTopEl = (document.getElementById('input-distancia-top') as HTMLInputElement);
+    const distanciaModalEl = (document.getElementById('input-distancia') as HTMLInputElement);
+    const distanciaTopRaw = distanciaTopEl?.value ?? '';
+    const distanciaModalRaw = distanciaModalEl?.value ?? '';
+    const distanciaTop = distanciaTopRaw === '' ? null : parseFloat(distanciaTopRaw);
+    const distanciaModal = distanciaModalRaw === '' ? null : parseFloat(distanciaModalRaw);
+    const distancia = distanciaTop ?? distanciaModal;
     const empleados = parseInt((document.getElementById('input-empleados') as HTMLInputElement)?.value) || 0;
     return { distancia, empleados };
   }
@@ -406,9 +600,14 @@ import Layout from '../layouts/Layout.astro';
     const { distancia, empleados } = obtenerParametrosEvento();
     const { margen, tarifaEmpleado, tarifaKm } = obtenerParametrosFinancieros();
     const cliente = (document.getElementById('input-cliente') as HTMLInputElement)?.value || 'Cliente';
+    const invitados = obtenerInvitados();
 
     setText('resultado-cliente', cliente);
-    setText('lbl-distancia', `(${distancia} km)`);
+    if (distancia === null || Number.isNaN(distancia)) {
+      setText('lbl-distancia', '(Tarifa Base)');
+    } else {
+      setText('lbl-distancia', `(${distancia} km)`);
+    }
     setText('lbl-empleados', `(${empleados} emp.)`);
 
     let totalSnacks = 0;
@@ -423,9 +622,12 @@ import Layout from '../layouts/Layout.astro';
       setText(`subtotal-${item.producto_id}`, `$${subtotal.toFixed(2)}`);
     }
 
-    setText('resultado-invitados-badge', `${totalUnidades} invitados`);
+    setText('resultado-invitados-badge', `${invitados || 0} invitados`);
 
-    const costoTransporte = tarifaKm * distancia;
+    const tarifaBase = 150;
+    const costoTransporte = distancia === null || Number.isNaN(distancia)
+      ? tarifaBase
+      : tarifaKm * distancia;
     const costoNomina = tarifaEmpleado * empleados;
     const totalOperativo = totalSnacks + costoTransporte + costoNomina;
     const montoMargen = totalOperativo * (margen / 100);
@@ -454,6 +656,10 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function limpiarFormulario() {
+    (document.getElementById('input-cliente-top') as HTMLInputElement).value = '';
+    (document.getElementById('input-fecha-top') as HTMLInputElement).value = '';
+    (document.getElementById('input-distancia-top') as HTMLInputElement).value = '';
+    (document.getElementById('input-invitados-top') as HTMLInputElement).value = '';
     (document.getElementById('input-cliente') as HTMLInputElement).value = '';
     (document.getElementById('input-fecha') as HTMLInputElement).value = '';
     (document.getElementById('input-hora') as HTMLInputElement).value = '';
@@ -461,7 +667,7 @@ import Layout from '../layouts/Layout.astro';
     (document.getElementById('input-colonia') as HTMLInputElement).value = '';
     (document.getElementById('input-calle') as HTMLInputElement).value = '';
     (document.getElementById('input-descripcion') as HTMLTextAreaElement).value = '';
-    (document.getElementById('input-distancia') as HTMLInputElement).value = '10';
+    (document.getElementById('input-distancia') as HTMLInputElement).value = '0';
     (document.getElementById('input-empleados') as HTMLInputElement).value = '2';
     (document.getElementById('input-margen') as HTMLInputElement).value = '40';
     (document.getElementById('input-tarifa-empleado') as HTMLInputElement).value = '300';
@@ -469,6 +675,7 @@ import Layout from '../layouts/Layout.astro';
     carrito = [];
     renderizarCarrito();
     actualizarTotales();
+    actualizarEstadoCatalogo();
   }
 
   async function guardarCotizacion() {
@@ -509,7 +716,7 @@ import Layout from '../layouts/Layout.astro';
           colonia,
           calle_numero: calleNumero,
           descripcion_lugar: descripcionLugar || null,
-          total_invitados: totalUnidades,
+          total_invitados: obtenerInvitados() || totalUnidades,
           distancia_km: distancia,
           numero_empleados: empleados,
           margen_ganancia_porcentaje: margen,
@@ -575,7 +782,43 @@ import Layout from '../layouts/Layout.astro';
     const btn = (e.target as HTMLElement).closest('button[data-action="agregar"]') as HTMLButtonElement | null;
     if (!btn) return;
     const id = parseInt(btn.dataset.productoId || '0', 10);
-    if (id) agregarProducto(id);
+    if (id) abrirModalFraccion(id);
+  });
+
+  // Modal fracción: actualizar preview al cambiar cantidad
+  document.getElementById('fraccion-cantidad')?.addEventListener('input', (e) => {
+    const val = parseInt((e.target as HTMLInputElement).value || '1');
+    actualizarPreviewInsumos(val > 0 ? val : 1);
+  });
+
+  // Modal fracción: confirmar y agregar al carrito
+  document.getElementById('btn-confirmar-fraccion')?.addEventListener('click', () => {
+    if (!fraccionProductoId) return;
+    const cantidad = parseInt((document.getElementById('fraccion-cantidad') as HTMLInputElement).value || '1');
+    const cant = cantidad > 0 ? cantidad : 1;
+    const producto = productosDisponibles.find(p => p.id === fraccionProductoId);
+    if (!producto) return;
+    const existente = carrito.find(item => item.producto_id === fraccionProductoId!);
+    if (existente) {
+      existente.cantidad += cant;
+    } else {
+      carrito.push({ producto_id: fraccionProductoId!, nombre: producto.nombre, cantidad: cant });
+    }
+    renderizarCarrito();
+    actualizarTotales();
+    cerrarModalFraccion();
+  });
+
+  document.getElementById('btn-cerrar-fraccion')?.addEventListener('click', () => cerrarModalFraccion());
+  document.getElementById('modal-fraccion')?.addEventListener('click', (e) => {
+    if (e.target === document.getElementById('modal-fraccion')) cerrarModalFraccion();
+  });
+
+  // Buscador de productos en catálogo
+  document.getElementById('buscar-producto-cotizador')?.addEventListener('input', (e) => {
+    const texto = (e.target as HTMLInputElement).value.toLowerCase();
+    const filtrados = productosDisponibles.filter(p => p.nombre.toLowerCase().includes(texto));
+    renderizarProductos(filtrados);
   });
 
   document.getElementById('lista-carrito')?.addEventListener('input', (e) => {
@@ -599,12 +842,38 @@ import Layout from '../layouts/Layout.astro';
     actualizarTotales();
   });
 
-  ['input-distancia', 'input-empleados', 'input-margen', 'input-tarifa-empleado', 'input-tarifa-km', 'input-cliente'].forEach(id => {
+  // Campos superiores: sincronizar con modal y reactividad
+  document.getElementById('input-cliente-top')?.addEventListener('input', (e) => {
+    (document.getElementById('input-cliente') as HTMLInputElement).value = (e.target as HTMLInputElement).value;
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => actualizarTotales(), 300);
+  });
+  document.getElementById('input-fecha-top')?.addEventListener('input', (e) => {
+    (document.getElementById('input-fecha') as HTMLInputElement).value = (e.target as HTMLInputElement).value;
+  });
+  document.getElementById('input-invitados-top')?.addEventListener('input', () => {
+    actualizarBadgeInvitados();
+    actualizarEstadoCatalogo();
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => actualizarTotales(), 300);
+  });
+  document.getElementById('input-invitados-top')?.addEventListener('change', () => {
+    actualizarBadgeInvitados();
+  });
+
+  ['input-distancia', 'input-empleados', 'input-margen', 'input-tarifa-empleado', 'input-tarifa-km'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', () => {
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => actualizarTotales(), 300);
     });
   });
+
+  document.getElementById('input-distancia-top')?.addEventListener('input', (e) => {
+    (document.getElementById('input-distancia') as HTMLInputElement).value = (e.target as HTMLInputElement).value;
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => actualizarTotales(), 300);
+  });
+  actualizarEstadoCatalogo();
 
   document.getElementById('btn-abrir-modal')?.addEventListener('click', () => abrirModal());
   document.getElementById('btn-guardar-cotizacion')?.addEventListener('click', () => guardarCotizacion());
