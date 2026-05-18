@@ -1,120 +1,312 @@
 ---
 /**
  * Página: Dashboard
- *
  * Vista principal del ERP con resumen general del negocio.
- * Muestra tarjetas de métricas principales y accesos rápidos.
  */
 import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout titulo="Dashboard" descripcion="Panel principal del ERP Raspados Yeti">
 
-  <!-- Tarjetas de bienvenida -->
-  <div class="mb-8">
+  <!-- Bienvenida -->
+  <div class="mb-6">
     <h3 class="text-2xl font-bold text-texto-900">Bienvenido al Sistema</h3>
     <p class="text-texto-500 mt-1">Panel de control de Raspados Yeti — Motor de Costeo</p>
   </div>
 
-  <!-- KPIs rápidos -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-
-    <!-- Tarjeta: Total Insumos -->
-    <div class="bg-white rounded-xl border border-superficie-200 p-6 shadow-card hover:shadow-card-hover group cursor-pointer"
-         onclick="window.location.href='/insumos'">
-      <div class="flex items-center justify-between mb-4">
+  <!-- KPIs -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <!-- Insumos -->
+    <div class="bg-white rounded-xl border border-superficie-200 p-5 shadow-card hover:shadow-card-hover cursor-pointer group" onclick="window.location.href='/insumos'">
+      <div class="flex items-center justify-between mb-3">
         <div class="w-10 h-10 rounded-lg bg-yeti-50 flex items-center justify-center group-hover:bg-yeti-100">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-yeti-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125v-3.75" />
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-yeti-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375" /></svg>
         </div>
         <span class="text-xs font-medium text-yeti-500 bg-yeti-50 px-2 py-1 rounded-full">Materia Prima</span>
       </div>
       <p id="kpi-insumos" class="text-3xl font-bold text-texto-900">—</p>
       <p class="text-sm text-texto-500 mt-1">Insumos registrados</p>
     </div>
-
-    <!-- Tarjeta: Total Productos -->
-    <div class="bg-white rounded-xl border border-superficie-200 p-6 shadow-card hover:shadow-card-hover group cursor-pointer"
-         onclick="window.location.href='/cotizador'">
-      <div class="flex items-center justify-between mb-4">
+    <!-- Productos -->
+    <div class="bg-white rounded-xl border border-superficie-200 p-5 shadow-card hover:shadow-card-hover cursor-pointer group" onclick="window.location.href='/productos'">
+      <div class="flex items-center justify-between mb-3">
         <div class="w-10 h-10 rounded-lg bg-frost-400/10 flex items-center justify-center group-hover:bg-frost-400/20">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-frost-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" />
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-frost-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" /></svg>
         </div>
         <span class="text-xs font-medium text-frost-600 bg-frost-400/10 px-2 py-1 rounded-full">Snacks</span>
       </div>
       <p id="kpi-productos" class="text-3xl font-bold text-texto-900">—</p>
       <p class="text-sm text-texto-500 mt-1">Productos con receta</p>
     </div>
-
-    <!-- Tarjeta: Cotizador -->
-    <div class="bg-gradient-to-br from-yeti-600 to-yeti-700 rounded-xl p-6 shadow-card hover:shadow-card-hover group cursor-pointer text-white"
-         onclick="window.location.href='/cotizador'">
-      <div class="flex items-center justify-between mb-4">
-        <div class="w-10 h-10 rounded-lg bg-white/20 backdrop-blur flex items-center justify-center group-hover:bg-white/30">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V18zm2.498-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zM8.25 6h7.5v2.25h-7.5V6zM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 002.25 2.25h10.5a2.25 2.25 0 002.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0012 2.25z" />
-          </svg>
+    <!-- Cotizaciones -->
+    <div class="bg-white rounded-xl border border-superficie-200 p-5 shadow-card hover:shadow-card-hover cursor-pointer group" onclick="window.location.href='/historial'">
+      <div class="flex items-center justify-between mb-3">
+        <div class="w-10 h-10 rounded-lg bg-costo-50 flex items-center justify-center group-hover:bg-costo-100">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-costo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
         </div>
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white/60 group-hover:text-white group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-        </svg>
+        <span class="text-xs font-medium text-costo-600 bg-costo-50 px-2 py-1 rounded-full">Ventas</span>
       </div>
-      <p class="text-3xl font-bold">Cotizador</p>
-      <p class="text-sm text-yeti-200 mt-1">Calcular costos de producción →</p>
+      <p id="kpi-cotizaciones" class="text-3xl font-bold text-texto-900">—</p>
+      <p id="kpi-cotizaciones-monto" class="text-sm text-texto-500 mt-1">Cotizaciones totales</p>
+    </div>
+    <!-- Eventos -->
+    <div class="bg-gradient-to-br from-yeti-600 to-yeti-700 rounded-xl p-5 shadow-card hover:shadow-card-hover cursor-pointer text-white group" onclick="window.location.href='/eventos'">
+      <div class="flex items-center justify-between mb-3">
+        <div class="w-10 h-10 rounded-lg bg-white/20 backdrop-blur flex items-center justify-center group-hover:bg-white/30">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75" /></svg>
+        </div>
+        <span class="text-xs font-medium text-white/80 bg-white/20 px-2 py-1 rounded-full">Agenda</span>
+      </div>
+      <p id="kpi-eventos" class="text-3xl font-bold">—</p>
+      <p class="text-sm text-white/70 mt-1">Eventos este mes</p>
     </div>
   </div>
 
-  <!-- Acciones rápidas -->
-  <div class="bg-white rounded-xl border border-superficie-200 p-6 shadow-card">
-    <h4 class="text-sm font-semibold text-texto-900 uppercase tracking-wide mb-4">Accesos Rápidos</h4>
-    <div class="grid grid-cols-2 gap-3">
-      <a href="/insumos" class="flex items-center gap-3 p-4 rounded-lg border border-superficie-200 hover:border-yeti-300 hover:bg-yeti-50 group">
-        <div class="w-8 h-8 rounded bg-yeti-50 flex items-center justify-center group-hover:bg-yeti-100">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-yeti-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
+  <!-- Fila inferior: Próximos Eventos + Alertas Stock -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+
+    <!-- Próximos Eventos -->
+    <div class="lg:col-span-2 bg-white rounded-xl border border-superficie-200 shadow-card overflow-hidden">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-superficie-200 bg-superficie-50">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-yeti-50 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-yeti-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </div>
+          <h4 class="text-sm font-bold text-texto-900">Próximos Eventos</h4>
         </div>
-        <span class="text-sm font-medium text-texto-700 group-hover:text-yeti-700">Gestionar Insumos</span>
-      </a>
-      <a href="/cotizador" class="flex items-center gap-3 p-4 rounded-lg border border-superficie-200 hover:border-frost-400 hover:bg-frost-400/5 group">
-        <div class="w-8 h-8 rounded bg-frost-400/10 flex items-center justify-center group-hover:bg-frost-400/20">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-frost-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
-          </svg>
+        <a href="/eventos" class="text-xs font-medium text-yeti-600 hover:text-yeti-700">Ver agenda →</a>
+      </div>
+      <div id="lista-proximos" class="divide-y divide-superficie-100">
+        <div class="px-5 py-8 text-center text-sm text-texto-400">Cargando eventos...</div>
+      </div>
+    </div>
+
+    <!-- Alertas de Stock -->
+    <div class="bg-white rounded-xl border border-superficie-200 shadow-card overflow-hidden">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-superficie-200 bg-superficie-50">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-costo-50 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-costo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+          </div>
+          <h4 class="text-sm font-bold text-texto-900">Alertas de Inventario</h4>
         </div>
-        <span class="text-sm font-medium text-texto-700 group-hover:text-frost-600">Cotizar Producto</span>
-      </a>
+      </div>
+      <div id="lista-alertas" class="max-h-80 overflow-y-auto">
+        <div class="px-5 py-8 text-center text-sm text-texto-400">Revisando stock...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cotizaciones Recientes -->
+  <div class="bg-white rounded-xl border border-superficie-200 shadow-card overflow-hidden">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-superficie-200 bg-superficie-50">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-ganancia-50 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-ganancia-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+        </div>
+        <h4 class="text-sm font-bold text-texto-900">Cotizaciones Recientes</h4>
+      </div>
+      <a href="/historial" class="text-xs font-medium text-yeti-600 hover:text-yeti-700">Ver historial →</a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-superficie-50 text-texto-500 text-xs uppercase tracking-wider">
+            <th class="px-5 py-3 text-left font-semibold">Cliente</th>
+            <th class="px-5 py-3 text-left font-semibold">Fecha</th>
+            <th class="px-5 py-3 text-right font-semibold">Monto</th>
+            <th class="px-5 py-3 text-center font-semibold">Estado</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-cotizaciones" class="divide-y divide-superficie-100">
+          <tr><td colspan="4" class="px-5 py-8 text-center text-texto-400">Cargando cotizaciones...</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
 </Layout>
 
 <script>
-  // Cargar KPIs del dashboard
-  async function cargarKPIs() {
+  const API = 'http://127.0.0.1:8000/api/v1';
+  const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+  const estadosCfg: Record<string, {bg:string, text:string, border:string}> = {
+    'Cotizado':        { bg:'bg-costo-50',     text:'text-costo-600',     border:'border-costo-100' },
+    'Anticipo Pagado': { bg:'bg-yeti-50',      text:'text-yeti-600',      border:'border-yeti-100' },
+    'Confirmado':      { bg:'bg-frost-100',    text:'text-frost-600',     border:'border-frost-200' },
+    'Completado':      { bg:'bg-ganancia-50',  text:'text-ganancia-600',  border:'border-ganancia-100' },
+    'Pendiente':       { bg:'bg-costo-50',     text:'text-costo-600',     border:'border-costo-100' },
+    'Cancelado':       { bg:'bg-red-50',       text:'text-red-600',       border:'border-red-100' },
+  };
+
+  function badge(estado: string) {
+    const c = estadosCfg[estado] || estadosCfg['Pendiente'];
+    return `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${c.bg} ${c.text} border ${c.border}">${estado}</span>`;
+  }
+
+  function formatMoney(v: string|number) {
+    return '$' + parseFloat(String(v)).toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+
+  async function cargarDashboard() {
     try {
-      const [insumosRes, productosRes] = await Promise.all([
-        fetch('http://127.0.0.1:8001/api/v1/insumos'),
-        fetch('http://127.0.0.1:8001/api/v1/productos'),
+      const [insRes, prodRes, cotRes, evRes] = await Promise.all([
+        fetch(`${API}/insumos`), fetch(`${API}/productos`),
+        fetch(`${API}/cotizaciones`), fetch(`${API}/eventos`)
       ]);
 
-      if (insumosRes.ok) {
-        const data = await insumosRes.json();
+      // KPIs
+      if (insRes.ok) {
+        const d = await insRes.json();
         const el = document.getElementById('kpi-insumos');
-        if (el) el.textContent = data.datos.total.toString();
+        if (el) el.textContent = String(d.datos.total);
       }
-      if (productosRes.ok) {
-        const data = await productosRes.json();
+      if (prodRes.ok) {
+        const d = await prodRes.json();
         const el = document.getElementById('kpi-productos');
-        if (el) el.textContent = data.datos.total.toString();
+        if (el) el.textContent = String(d.datos.total);
       }
-    } catch {
-      // API no disponible — los KPIs se quedan con "—"
+
+      // Cotizaciones
+      let cotizaciones: any[] = [];
+      if (cotRes.ok) {
+        const d = await cotRes.json();
+        cotizaciones = d.datos || [];
+        const el = document.getElementById('kpi-cotizaciones');
+        if (el) el.textContent = String(cotizaciones.length);
+        const total = cotizaciones.reduce((s: number, c: any) => s + parseFloat(c.total_precio || '0'), 0);
+        const elM = document.getElementById('kpi-cotizaciones-monto');
+        if (elM) elM.textContent = formatMoney(total) + ' facturado';
+        renderCotizaciones(cotizaciones.slice(0, 5));
+      }
+
+      // Eventos
+      let eventos: any[] = [];
+      if (evRes.ok) {
+        const d = await evRes.json();
+        eventos = d.datos || [];
+        const hoy = new Date().toISOString().split('T')[0];
+        const mesActual = new Date().getMonth();
+        const anioActual = new Date().getFullYear();
+        const delMes = eventos.filter((e: any) => {
+          const f = new Date(e.fecha_evento);
+          return f.getMonth() === mesActual && f.getFullYear() === anioActual;
+        });
+        const el = document.getElementById('kpi-eventos');
+        if (el) el.textContent = String(delMes.length);
+
+        const proximos = eventos
+          .filter((e: any) => {
+            const fd = e.fecha_evento.split('T')[0];
+            return fd >= hoy && e.estado !== 'Completado';
+          })
+          .sort((a: any, b: any) => a.fecha_evento.localeCompare(b.fecha_evento))
+          .slice(0, 5);
+        renderProximos(proximos);
+      }
+
+      // Alertas stock — cargar todas las páginas
+      if (insRes.ok) {
+        let allInsumos: any[] = [];
+        let page = 1;
+        let lastPage = 1;
+        // Re-fetch para obtener todos
+        while (page <= lastPage) {
+          const r = await fetch(`${API}/insumos?page=${page}`);
+          if (!r.ok) break;
+          const d = await r.json();
+          allInsumos = allInsumos.concat(d.datos.data);
+          lastPage = d.datos.last_page;
+          page++;
+        }
+        const bajos = allInsumos.filter((i: any) => parseFloat(i.stock_actual) <= parseFloat(i.stock_minimo) * 1.5);
+        renderAlertas(bajos);
+      }
+
+    } catch (err) {
+      console.error('Error cargando dashboard:', err);
     }
   }
-  cargarKPIs();
+
+  function renderProximos(eventos: any[]) {
+    const cont = document.getElementById('lista-proximos');
+    if (!cont) return;
+    if (!eventos.length) {
+      cont.innerHTML = `<div class="px-5 py-8 text-center"><span class="text-3xl mb-2 block">🎉</span><p class="text-sm font-semibold text-texto-600">Sin eventos pendientes</p><p class="text-xs text-texto-400">Todos los eventos están al día.</p></div>`;
+      return;
+    }
+    const hoyStr = new Date().toISOString().split('T')[0];
+    cont.innerHTML = eventos.map((ev: any) => {
+      const f = new Date(ev.fecha_evento);
+      const fechaStr = ev.fecha_evento.split('T')[0];
+      const esHoy = fechaStr === hoyStr;
+      const dia = f.getDate();
+      const mes = meses[f.getMonth()];
+      return `
+        <a href="/eventos" class="flex items-center gap-4 px-5 py-3.5 hover:bg-superficie-50 transition-colors group">
+          <div class="w-11 h-11 rounded-xl ${esHoy ? 'bg-yeti-500 text-white' : 'bg-superficie-100 text-texto-700'} flex flex-col items-center justify-center shrink-0">
+            <span class="text-[9px] font-bold uppercase leading-none ${esHoy ? 'text-yeti-100' : 'text-texto-400'}">${mes}</span>
+            <span class="text-base font-black leading-none mt-0.5">${dia}</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-texto-900 truncate group-hover:text-yeti-700">${ev.cliente_nombre}</p>
+            <p class="text-xs text-texto-500 truncate mt-0.5">${(ev.hora_inicio||'').slice(0,5)} hrs · ${ev.paquete_contratado || 'Sin paquete'}</p>
+          </div>
+          ${badge(ev.estado)}
+        </a>`;
+    }).join('');
+  }
+
+  function renderAlertas(insumos: any[]) {
+    const cont = document.getElementById('lista-alertas');
+    if (!cont) return;
+    if (!insumos.length) {
+      cont.innerHTML = `<div class="px-5 py-8 text-center"><span class="text-3xl mb-2 block">✅</span><p class="text-sm font-semibold text-texto-600">Stock saludable</p><p class="text-xs text-texto-400">Todos los insumos están por encima del mínimo.</p></div>`;
+      return;
+    }
+    // Ordenar: primero los más críticos
+    insumos.sort((a: any, b: any) => (parseFloat(a.stock_actual)/parseFloat(a.stock_minimo)) - (parseFloat(b.stock_actual)/parseFloat(b.stock_minimo)));
+    cont.innerHTML = insumos.map((i: any) => {
+      const actual = parseFloat(i.stock_actual);
+      const minimo = parseFloat(i.stock_minimo);
+      const ratio = actual / minimo;
+      const critico = ratio <= 1;
+      const pct = Math.min((actual / (minimo * 2)) * 100, 100);
+      return `
+        <div class="px-5 py-3 flex items-center gap-3 border-b border-superficie-100 last:border-0">
+          <div class="w-2.5 h-2.5 rounded-full shrink-0 ${critico ? 'bg-red-500 animate-pulse' : 'bg-costo-400'}"></div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-texto-900 truncate">${i.nombre}</p>
+            <div class="flex items-center gap-2 mt-1">
+              <div class="flex-1 h-1.5 bg-superficie-200 rounded-full overflow-hidden">
+                <div class="h-full rounded-full ${critico ? 'bg-red-500' : 'bg-costo-400'}" style="width:${pct}%"></div>
+              </div>
+              <span class="text-[11px] font-mono ${critico ? 'text-red-600 font-bold' : 'text-costo-600'}">${actual} / ${minimo} ${i.unidad_medida}</span>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderCotizaciones(cotizaciones: any[]) {
+    const tbody = document.getElementById('tabla-cotizaciones');
+    if (!tbody) return;
+    if (!cotizaciones.length) {
+      tbody.innerHTML = `<tr><td colspan="4" class="px-5 py-8 text-center text-texto-400">Sin cotizaciones aún.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = cotizaciones.map((c: any) => {
+      const f = new Date(c.fecha_evento);
+      return `
+        <tr class="hover:bg-superficie-50 transition-colors">
+          <td class="px-5 py-3"><p class="font-medium text-texto-900">${c.cliente_nombre}</p></td>
+          <td class="px-5 py-3 text-texto-500">${f.getDate()} ${meses[f.getMonth()]} ${f.getFullYear()}</td>
+          <td class="px-5 py-3 text-right font-semibold text-texto-900">${formatMoney(c.total_precio)}</td>
+          <td class="px-5 py-3 text-center">${badge(c.estado)}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  cargarDashboard();
 </script>

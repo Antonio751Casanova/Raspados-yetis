@@ -61,6 +61,168 @@
   --shadow-panel: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -4px rgba(0, 0, 0, 0.06);
 }
 
+/* ── Tema Oscuro ─────────────────────────────────────── */
+/* Se activa añadiendo la clase "dark" al <html>         */
+
+html.dark {
+  /* Superficies oscuras */
+  --color-superficie-50: #0c1222;
+  --color-superficie-100: #162032;
+  --color-superficie-200: #283548;
+  --color-superficie-300: #3d4f65;
+
+  /* Texto — todo mucho más claro para máxima legibilidad */
+  --color-texto-900: #ffffff;
+  --color-texto-700: #f1f5f9;
+  --color-texto-500: #cbd5e1;
+  --color-texto-400: #a8b8cc;
+
+  /* Yeti: más brillante para que resalte sobre fondo oscuro */
+  --color-yeti-50: #1a2744;
+  --color-yeti-100: #1e3a6e;
+  --color-yeti-200: #3b6ec9;
+
+  /* Frost adaptado */
+  --color-frost-100: #0c3644;
+  --color-frost-200: #155e75;
+
+  /* Ganancia adaptado */
+  --color-ganancia-50: #0a2620;
+  --color-ganancia-100: #0f4035;
+  --color-ganancia-200: #16664f;
+  --color-ganancia-500: #34d399;
+  --color-ganancia-600: #6ee7b7;
+
+  /* Costo adaptado */
+  --color-costo-50: #2b1a06;
+  --color-costo-100: #4e2e0a;
+
+  /* Sombras más pronunciadas */
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
+  --shadow-card-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+  --shadow-panel: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+
+  color-scheme: dark;
+}
+
+/* ── Overrides globales para modo oscuro ───────────── */
+
+html.dark body {
+  background-color: var(--color-superficie-50);
+  color: var(--color-texto-900);
+}
+
+/* bg-white → fondo oscuro de contenedor */
+html.dark .bg-white {
+  background-color: var(--color-superficie-100) !important;
+}
+
+/* Excepciones: elementos que DEBEN mantener su color blanco */
+html.dark .text-white {
+  color: #ffffff !important;
+}
+
+/* ── Todo texto semántico → colores brillantes/pastel ── */
+html.dark .text-yeti-500 { color: #93c5fd !important; }
+html.dark .text-yeti-600 { color: #93c5fd !important; }
+html.dark .text-yeti-700 { color: #bfdbfe !important; }
+html.dark .text-yeti-800 { color: #dbeafe !important; }
+html.dark .text-yeti-900 { color: #eff6ff !important; }
+html.dark .text-frost-500 { color: #a5f3fc !important; }
+html.dark .text-frost-600 { color: #a5f3fc !important; }
+html.dark .text-ganancia-500 { color: #86efac !important; }
+html.dark .text-ganancia-600 { color: #86efac !important; }
+html.dark .text-ganancia-700 { color: #86efac !important; }
+html.dark .text-costo-500 { color: #fde68a !important; }
+html.dark .text-costo-600 { color: #fde68a !important; }
+html.dark .text-red-500 { color: #fca5a5 !important; }
+html.dark .text-red-600 { color: #fca5a5 !important; }
+
+/* Badge backgrounds visibles sobre fondo oscuro */
+html.dark .bg-yeti-50 {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+}
+html.dark .bg-frost-400\/10,
+html.dark .bg-frost-100 {
+  background-color: rgba(34, 211, 238, 0.15) !important;
+}
+html.dark .bg-ganancia-50 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+}
+html.dark .bg-costo-50 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+}
+html.dark .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+}
+html.dark .border-ganancia-100 {
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+html.dark .border-costo-100 {
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+html.dark .border-red-100 {
+  border-color: rgba(239, 68, 68, 0.25) !important;
+}
+html.dark .border-yeti-100 {
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+html.dark .border-frost-200 {
+  border-color: rgba(34, 211, 238, 0.3) !important;
+}
+
+/* Sidebar gradient header - mantener */
+html.dark .from-yeti-600 { --tw-gradient-from: #2563eb !important; }
+html.dark .to-yeti-700 { --tw-gradient-to: #1d4ed8 !important; }
+
+/* Sidebar active nav: mejor contraste */
+html.dark .border-yeti-200 {
+  border-color: #2d4a8a !important;
+}
+
+/* Notification panel en dark */
+html.dark .divide-superficie-100 > :not(:last-child) {
+  border-color: var(--color-superficie-200);
+}
+
+/* Input fields */
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: var(--color-superficie-100) !important;
+  border-color: var(--color-superficie-200) !important;
+  color: var(--color-texto-900) !important;
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: var(--color-texto-400) !important;
+}
+
+/* Tablas */
+html.dark th {
+  background-color: var(--color-superficie-100) !important;
+  color: var(--color-texto-700) !important;
+}
+html.dark td {
+  border-color: var(--color-superficie-200) !important;
+}
+
+/* Scrollbar oscuro */
+html.dark ::-webkit-scrollbar-track {
+  background: var(--color-superficie-100);
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: var(--color-superficie-300);
+}
+
+/* Transición suave al cambiar de tema */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+html * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.15s ease, box-shadow 0.3s ease;
+}
+
 /* ── SVG Sizing Fix ──────────────────────────────────── */
 /* Tailwind v4 necesita que los SVGs inline hereden tamaño correctamente */
 svg {

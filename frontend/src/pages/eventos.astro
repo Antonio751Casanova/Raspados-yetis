@@ -23,12 +23,7 @@ import Layout from '../layouts/Layout.astro';
               <p id="lista-contador" class="text-xs text-texto-500">Cargando...</p>
             </div>
           </div>
-          <button id="btn-nuevo-evento" class="w-full sm:w-auto flex items-center justify-center gap-2 px-3 py-2.5 sm:px-4 sm:py-2.5 bg-yeti-600 hover:bg-yeti-700 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all active:scale-95 whitespace-nowrap">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            Nuevo Evento
-          </button>
+
         </div>
 
         <!-- Buscador Rápido -->
@@ -333,7 +328,7 @@ function initListeners() {
 async function fetchEventos() {
   el.loading?.classList.remove('hidden');
   try {
-    const res = await fetch('http://127.0.0.1:8001/api/v1/eventos');
+    const res = await fetch('http://127.0.0.1:8000/api/v1/eventos');
     const json = await res.json();
     if (json.exito) {
       (state as any).events = (json.datos as any[]).map((ev: any) => ({
@@ -600,7 +595,7 @@ async function cambiarEstadoEvento(nuevoEstado: string) {
 
   try {
     el.loading?.classList.remove('hidden');
-    const res = await fetch(`http://127.0.0.1:8001/api/v1/eventos/${ev.id}/estado`, {
+    const res = await fetch(`http://127.0.0.1:8000/api/v1/eventos/${ev.id}/estado`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ estado: nuevoEstado })
