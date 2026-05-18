@@ -1,0 +1,374 @@
+---
+/**
+ * Página: Gestión de Empleados (CRUD)
+ * Módulo E — Recursos Humanos · Raspados Yeti ERP
+ */
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout titulo="Empleados — RR. HH." descripcion="CRUD de empleados y personal de Raspados Yeti">
+
+  <!-- Encabezado -->
+  <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-texto-900">Directorio de Empleados</h1>
+      <p class="text-sm text-texto-500 mt-1">Alta, edición y control de estado del personal</p>
+    </div>
+    <button id="btn-nuevo" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-yeti-600 text-white text-sm font-medium hover:bg-yeti-700 transition-colors shadow-sm">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      Nuevo Empleado
+    </button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="bg-white rounded-xl border border-superficie-200 p-4 mb-6 flex flex-wrap gap-3 shadow-sm">
+    <input id="filtro-buscar" type="text" placeholder="Buscar por nombre o correo…"
+      class="flex-1 min-w-[200px] px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400" />
+    <select id="filtro-estado" class="px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400">
+      <option value="">Todos los estados</option>
+      <option value="activo">Activo</option>
+      <option value="inactivo">Inactivo</option>
+    </select>
+    <select id="filtro-rol" class="px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400">
+      <option value="">Todos los roles</option>
+    </select>
+    <button id="btn-filtrar" class="px-4 py-2 text-sm rounded-lg bg-superficie-100 hover:bg-superficie-200 text-texto-700 font-medium transition-colors">
+      Filtrar
+    </button>
+  </div>
+
+  <!-- Tabla -->
+  <div class="bg-white rounded-xl border border-superficie-200 shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-superficie-50 border-b border-superficie-200">
+          <tr>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-texto-500 uppercase tracking-wider">Empleado</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-texto-500 uppercase tracking-wider">Puesto / Rol</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-texto-500 uppercase tracking-wider">Contacto</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-texto-500 uppercase tracking-wider">Ingreso</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-texto-500 uppercase tracking-wider">Estado</th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-texto-500 uppercase tracking-wider">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-empleados" class="divide-y divide-superficie-100">
+          <tr><td colspan="6" class="px-5 py-8 text-center text-texto-400">Cargando empleados...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Paginación -->
+    <div id="paginacion" class="px-5 py-3 border-t border-superficie-100 flex items-center justify-between text-xs text-texto-500"></div>
+  </div>
+
+  <!-- ══ MODAL CREAR / EDITAR ══ -->
+  <div id="modal-empleado" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" id="modal-overlay"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="sticky top-0 bg-white px-6 py-4 border-b border-superficie-200 flex items-center justify-between rounded-t-2xl">
+        <h3 id="modal-titulo" class="text-base font-semibold text-texto-900">Nuevo Empleado</h3>
+        <button id="modal-cerrar" class="text-texto-400 hover:text-texto-700 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="form-empleado" class="px-6 py-5 space-y-4" novalidate>
+        <input type="hidden" id="emp-id" />
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-texto-700 mb-1">Nombre *</label>
+            <input id="emp-nombre" type="text" required class="w-full px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-texto-700 mb-1">Apellido Paterno *</label>
+            <input id="emp-ap-paterno" type="text" required class="w-full px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-texto-700 mb-1">Apellido Materno</label>
+            <input id="emp-ap-materno" type="text" class="w-full px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-texto-700 mb-1">Teléfono</label>
+            <input id="emp-telefono" type="tel" class="w-full px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-texto-700 mb-1">Correo</label>
+            <input id="emp-correo" type="email" class="w-full px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-texto-700 mb-1">Dirección</label>
+          <input id="emp-direccion" type="text" class="w-full px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-texto-700 mb-1">Fecha de Ingreso *</label>
+            <input id="emp-fecha-ingreso" type="date" required class="w-full px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-texto-700 mb-1">Puesto</label>
+            <input id="emp-puesto" type="text" class="w-full px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-texto-700 mb-1">Salario por Evento ($)</label>
+            <input id="emp-salario" type="number" min="0" step="0.01" class="w-full px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-texto-700 mb-1">Estado</label>
+            <select id="emp-estado" class="w-full px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400">
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-texto-700 mb-1">Roles</label>
+            <div id="roles-checkboxes" class="flex flex-wrap gap-2 pt-1">
+              <!-- Generado por JS -->
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-texto-700 mb-1">Notas</label>
+          <textarea id="emp-notas" rows="2" class="w-full px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400 resize-none"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" id="btn-cancelar-modal" class="px-4 py-2 text-sm rounded-lg border border-superficie-300 text-texto-700 hover:bg-superficie-50 transition-colors">
+            Cancelar
+          </button>
+          <button type="submit" id="btn-guardar" class="px-5 py-2 text-sm rounded-lg bg-yeti-600 text-white font-medium hover:bg-yeti-700 transition-colors">
+            Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</Layout>
+
+<script>
+  const API = 'http://127.0.0.1:8001/api/v1';
+  let paginaActual = 1;
+  let rolesDisponibles: any[] = [];
+
+  // ── Helpers ────────────────────────────────────────────────────────────
+  function esc(t: any) { return String(t ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function fmtFecha(d: string) {
+    if (!d) return '—';
+    const base = String(d).split('T')[0];
+    const fecha = new Date(`${base}T12:00:00`);
+    if (Number.isNaN(fecha.getTime())) return '—';
+    return new Intl.DateTimeFormat('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }).format(fecha);
+  }
+  function estadoBadge(e: string) {
+    return e === 'activo'
+      ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-ganancia-100 text-ganancia-700"><span class="w-1.5 h-1.5 rounded-full bg-ganancia-500"></span>Activo</span>'
+      : '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-superficie-200 text-texto-500"><span class="w-1.5 h-1.5 rounded-full bg-texto-400"></span>Inactivo</span>';
+  }
+
+  // ── Cargar Roles ───────────────────────────────────────────────────────
+  async function cargarRoles() {
+    try {
+      const res = await fetch(`${API}/roles-staff`);
+      const json = await res.json();
+      rolesDisponibles = json.datos ?? [];
+      const select = document.getElementById('filtro-rol')!;
+      rolesDisponibles.forEach((r: any) => {
+        const opt = document.createElement('option');
+        opt.value = r.id; opt.textContent = r.nombre;
+        select.appendChild(opt);
+      });
+    } catch {}
+  }
+
+  // ── Cargar Empleados ───────────────────────────────────────────────────
+  async function cargarEmpleados(pagina = 1) {
+    const buscar = (document.getElementById('filtro-buscar') as HTMLInputElement).value;
+    const estado = (document.getElementById('filtro-estado') as HTMLSelectElement).value;
+    const rol    = (document.getElementById('filtro-rol') as HTMLSelectElement).value;
+
+    const params = new URLSearchParams({ page: String(pagina), per_page: '15' });
+    if (buscar) params.set('buscar', buscar);
+    if (estado) params.set('estado', estado);
+    if (rol)    params.set('rol', rol);
+
+    const tbody = document.getElementById('tabla-empleados')!;
+    tbody.innerHTML = '<tr><td colspan="6" class="px-5 py-8 text-center text-texto-400">Cargando...</td></tr>';
+
+    try {
+      const res  = await fetch(`${API}/empleados?${params}`);
+      const json = await res.json();
+      const items = json.datos?.data ?? [];
+      const meta  = json.datos;
+
+      if (!items.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="px-5 py-8 text-center text-texto-400">No se encontraron empleados.</td></tr>';
+      } else {
+        tbody.innerHTML = items.map((emp: any) => {
+          const roles = emp.roles?.map((r: any) => `<span class="px-2 py-0.5 rounded-full text-[10px] font-medium text-white" style="background:${r.color_hex}">${esc(r.nombre)}</span>`).join(' ') || '—';
+          return `
+          <tr class="hover:bg-superficie-50 transition-colors">
+            <td class="px-5 py-3">
+              <div class="flex items-center gap-3">
+                <img src="${esc(emp.foto_url)}" alt="" class="w-9 h-9 rounded-full object-cover border border-superficie-200" />
+                <div>
+                  <p class="font-medium text-texto-900">${esc(emp.nombre_completo)}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-5 py-3">
+              <p class="text-texto-700">${esc(emp.puesto ?? '—')}</p>
+              <div class="flex flex-wrap gap-1 mt-1">${roles}</div>
+            </td>
+            <td class="px-5 py-3 text-texto-600">
+              <p>${esc(emp.telefono ?? '—')}</p>
+              <p class="text-xs text-texto-400">${esc(emp.correo ?? '')}</p>
+            </td>
+            <td class="px-5 py-3 text-texto-600">${fmtFecha(emp.fecha_ingreso)}</td>
+            <td class="px-5 py-3">${estadoBadge(emp.estado)}</td>
+            <td class="px-5 py-3">
+              <div class="flex items-center gap-2">
+                <button data-id="${emp.id}" class="btn-editar text-xs px-3 py-1.5 rounded-lg border border-superficie-300 text-texto-700 hover:bg-superficie-100 transition-colors">Editar</button>
+                <a href="/rh/empleados/${emp.id}" class="text-xs px-3 py-1.5 rounded-lg bg-yeti-50 text-yeti-700 hover:bg-yeti-100 transition-colors">Historial</a>
+                <button data-id="${emp.id}" class="btn-eliminar text-xs px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors">Eliminar</button>
+              </div>
+            </td>
+          </tr>`;
+        }).join('');
+      }
+
+      // Paginación
+      const pag = document.getElementById('paginacion')!;
+      pag.innerHTML = `
+        <span>Mostrando ${meta.from ?? 0}–${meta.to ?? 0} de ${meta.total ?? 0}</span>
+        <div class="flex gap-2">
+          <button id="pag-prev" ${pagina <= 1 ? 'disabled' : ''} class="px-3 py-1 rounded border border-superficie-300 disabled:opacity-40 hover:bg-superficie-100 transition-colors">‹ Ant.</button>
+          <button id="pag-next" ${pagina >= (meta.last_page ?? 1) ? 'disabled' : ''} class="px-3 py-1 rounded border border-superficie-300 disabled:opacity-40 hover:bg-superficie-100 transition-colors">Sig. ›</button>
+        </div>`;
+
+      document.getElementById('pag-prev')?.addEventListener('click', () => cargarEmpleados(pagina - 1));
+      document.getElementById('pag-next')?.addEventListener('click', () => cargarEmpleados(pagina + 1));
+      paginaActual = pagina;
+
+      // Botones editar / eliminar
+      document.querySelectorAll('.btn-editar').forEach(btn =>
+        btn.addEventListener('click', () => abrirEdicion(Number((btn as HTMLElement).dataset.id))));
+      document.querySelectorAll('.btn-eliminar').forEach(btn =>
+        btn.addEventListener('click', () => eliminarEmpleado(Number((btn as HTMLElement).dataset.id))));
+
+    } catch { tbody.innerHTML = '<tr><td colspan="6" class="px-5 py-8 text-center text-red-400">Error al cargar datos.</td></tr>'; }
+  }
+
+  // ── Modal ──────────────────────────────────────────────────────────────
+  function abrirModal(titulo: string) {
+    (document.getElementById('modal-titulo') as HTMLElement).textContent = titulo;
+    document.getElementById('modal-empleado')!.classList.remove('hidden');
+    // Renderizar checkboxes de roles
+    const cont = document.getElementById('roles-checkboxes')!;
+    cont.innerHTML = rolesDisponibles.map(r => `
+      <label class="flex items-center gap-1.5 text-xs cursor-pointer">
+        <input type="checkbox" class="rol-check rounded accent-yeti-600" value="${r.id}" />
+        <span class="px-2 py-0.5 rounded-full text-white text-[10px] font-medium" style="background:${r.color_hex}">${esc(r.nombre)}</span>
+      </label>`).join('');
+  }
+
+  function cerrarModal() {
+    document.getElementById('modal-empleado')!.classList.add('hidden');
+    (document.getElementById('form-empleado') as HTMLFormElement).reset();
+    (document.getElementById('emp-id') as HTMLInputElement).value = '';
+  }
+
+  async function abrirEdicion(id: number) {
+    try {
+      const res  = await fetch(`${API}/empleados/${id}`);
+      const json = await res.json();
+      const emp  = json.datos;
+      abrirModal('Editar Empleado');
+      (document.getElementById('emp-id') as HTMLInputElement).value = emp.id;
+      (document.getElementById('emp-nombre') as HTMLInputElement).value = emp.nombre ?? '';
+      (document.getElementById('emp-ap-paterno') as HTMLInputElement).value = emp.apellido_paterno ?? '';
+      (document.getElementById('emp-ap-materno') as HTMLInputElement).value = emp.apellido_materno ?? '';
+      (document.getElementById('emp-telefono') as HTMLInputElement).value = emp.telefono ?? '';
+      (document.getElementById('emp-correo') as HTMLInputElement).value = emp.correo ?? '';
+      (document.getElementById('emp-direccion') as HTMLInputElement).value = emp.direccion ?? '';
+      (document.getElementById('emp-fecha-ingreso') as HTMLInputElement).value = emp.fecha_ingreso?.substring(0,10) ?? '';
+      (document.getElementById('emp-puesto') as HTMLInputElement).value = emp.puesto ?? '';
+      (document.getElementById('emp-salario') as HTMLInputElement).value = emp.salario_por_evento ?? '';
+      (document.getElementById('emp-estado') as HTMLSelectElement).value = emp.estado ?? 'activo';
+      (document.getElementById('emp-notas') as HTMLTextAreaElement).value = emp.notas ?? '';
+      const rolesIds = emp.roles?.map((r: any) => String(r.id)) ?? [];
+      document.querySelectorAll<HTMLInputElement>('.rol-check').forEach(cb => {
+        cb.checked = rolesIds.includes(cb.value);
+      });
+    } catch { (window as any).Swal?.fire('Error', 'No se pudo cargar el empleado.', 'error'); }
+  }
+
+  async function eliminarEmpleado(id: number) {
+    const confirm = await (window as any).Swal?.fire({
+      title: '¿Eliminar empleado?', icon: 'warning',
+      showCancelButton: true, confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar', confirmButtonColor: '#dc2626'
+    });
+    if (!confirm?.isConfirmed) return;
+    try {
+      await fetch(`${API}/empleados/${id}`, { method: 'DELETE' });
+      (window as any).Swal?.fire('Eliminado', 'Empleado eliminado.', 'success');
+      cargarEmpleados(paginaActual);
+    } catch { (window as any).Swal?.fire('Error', 'No se pudo eliminar.', 'error'); }
+  }
+
+  // ── Form Submit ────────────────────────────────────────────────────────
+  document.getElementById('form-empleado')!.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = (document.getElementById('emp-id') as HTMLInputElement).value;
+    const roles = Array.from(document.querySelectorAll<HTMLInputElement>('.rol-check:checked')).map(c => Number(c.value));
+    const body = {
+      nombre: (document.getElementById('emp-nombre') as HTMLInputElement).value,
+      apellido_paterno: (document.getElementById('emp-ap-paterno') as HTMLInputElement).value,
+      apellido_materno: (document.getElementById('emp-ap-materno') as HTMLInputElement).value,
+      telefono: (document.getElementById('emp-telefono') as HTMLInputElement).value,
+      correo: (document.getElementById('emp-correo') as HTMLInputElement).value,
+      direccion: (document.getElementById('emp-direccion') as HTMLInputElement).value,
+      fecha_ingreso: (document.getElementById('emp-fecha-ingreso') as HTMLInputElement).value,
+      puesto: (document.getElementById('emp-puesto') as HTMLInputElement).value,
+      salario_por_evento: (document.getElementById('emp-salario') as HTMLInputElement).value,
+      estado: (document.getElementById('emp-estado') as HTMLSelectElement).value,
+      notas: (document.getElementById('emp-notas') as HTMLTextAreaElement).value,
+      roles,
+    };
+    try {
+      const url    = id ? `${API}/empleados/${id}` : `${API}/empleados`;
+      const method = id ? 'PUT' : 'POST';
+      const res    = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(body) });
+      const json   = await res.json();
+      if (!json.ok) throw new Error(json.message ?? 'Error');
+      cerrarModal();
+      (window as any).Swal?.fire('¡Listo!', json.mensaje, 'success');
+      cargarEmpleados(paginaActual);
+    } catch (err: any) { (window as any).Swal?.fire('Error', err.message, 'error'); }
+  });
+
+  // ── Event Listeners ────────────────────────────────────────────────────
+  document.getElementById('btn-nuevo')!.addEventListener('click', () => { abrirModal('Nuevo Empleado'); });
+  document.getElementById('modal-cerrar')!.addEventListener('click', cerrarModal);
+  document.getElementById('btn-cancelar-modal')!.addEventListener('click', cerrarModal);
+  document.getElementById('modal-overlay')!.addEventListener('click', cerrarModal);
+  document.getElementById('btn-filtrar')!.addEventListener('click', () => cargarEmpleados(1));
+
+  // Init
+  cargarRoles();
+  cargarEmpleados();
+</script>

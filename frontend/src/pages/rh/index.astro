@@ -1,0 +1,239 @@
+---
+/**
+ * Página: Recursos Humanos — Dashboard
+ *
+ * Panel administrativo del Módulo E con métricas,
+ * próximos eventos y alertas de personal.
+ *
+ * Módulo E — Recursos Humanos · Raspados Yeti ERP
+ */
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout titulo="Recursos Humanos" descripcion="Panel de Recursos Humanos — Gestión de staff y asignación de eventos en Raspados Yeti ERP">
+
+  <!-- ══════════════════ ENCABEZADO ══════════════════ -->
+  <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-texto-900">Recursos Humanos</h1>
+      <p class="text-sm text-texto-500 mt-1">Gestión de personal y asignación de eventos</p>
+    </div>
+    <div class="flex gap-3">
+      <a href="/rh/empleados" id="btn-ir-empleados"
+         class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-yeti-600 text-white text-sm font-medium hover:bg-yeti-700 transition-colors shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Ver Empleados
+      </a>
+      <a href="/rh/calendario" id="btn-ir-calendario"
+         class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-superficie-300 text-texto-700 text-sm font-medium hover:bg-superficie-100 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+        </svg>
+        Calendario
+      </a>
+    </div>
+  </div>
+
+  <!-- ══════════════════ TARJETAS KPI ══════════════════ -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+
+    <!-- Empleados Activos -->
+    <div class="bg-white rounded-xl border border-superficie-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-xs font-semibold uppercase tracking-widest text-texto-400">Empleados Activos</span>
+        <div class="w-9 h-9 rounded-lg bg-yeti-100 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-yeti-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+          </svg>
+        </div>
+      </div>
+      <p class="text-3xl font-bold text-texto-900" id="kpi-activos">—</p>
+      <p class="text-xs text-texto-400 mt-1" id="kpi-inactivos-label">cargando...</p>
+    </div>
+
+    <!-- Staff Asignado Hoy -->
+    <div class="bg-white rounded-xl border border-superficie-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-xs font-semibold uppercase tracking-widest text-texto-400">Staff Hoy</span>
+        <div class="w-9 h-9 rounded-lg bg-ganancia-100 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-ganancia-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+      <p class="text-3xl font-bold text-texto-900" id="kpi-staff-hoy">—</p>
+      <p class="text-xs text-texto-400 mt-1">asignaciones activas hoy</p>
+    </div>
+
+    <!-- Próximos Eventos -->
+    <div class="bg-white rounded-xl border border-superficie-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-xs font-semibold uppercase tracking-widest text-texto-400">Próximos Eventos</span>
+        <div class="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+          </svg>
+        </div>
+      </div>
+      <p class="text-3xl font-bold text-texto-900" id="kpi-proximos">—</p>
+      <p class="text-xs text-texto-400 mt-1">en los próximos 7 días</p>
+    </div>
+
+    <!-- Alertas de Personal -->
+    <div class="bg-white rounded-xl border border-superficie-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-xs font-semibold uppercase tracking-widest text-texto-400">Alertas de Personal</span>
+        <div class="w-9 h-9 rounded-lg bg-red-100 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          </svg>
+        </div>
+      </div>
+      <p class="text-3xl font-bold text-red-600" id="kpi-alertas">—</p>
+      <p class="text-xs text-texto-400 mt-1">eventos con personal insuficiente</p>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════ CUERPO PRINCIPAL ══════════════════ -->
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+    <!-- Próximos Eventos con Staff -->
+    <div class="xl:col-span-2 bg-white rounded-xl border border-superficie-200 shadow-sm">
+      <div class="px-6 py-4 border-b border-superficie-100 flex items-center justify-between">
+        <h2 class="text-sm font-semibold text-texto-900">Próximos Eventos (7 días)</h2>
+        <a href="/rh/asignaciones" class="text-xs text-yeti-600 font-medium hover:underline">Ver todos</a>
+      </div>
+      <div id="lista-proximos" class="divide-y divide-superficie-100">
+        <!-- JS rendered -->
+        <div class="px-6 py-8 text-center text-sm text-texto-400">Cargando eventos...</div>
+      </div>
+    </div>
+
+    <!-- Top Empleados + Alertas -->
+    <div class="flex flex-col gap-6">
+
+      <!-- Top 5 Empleados -->
+      <div class="bg-white rounded-xl border border-superficie-200 shadow-sm">
+        <div class="px-5 py-4 border-b border-superficie-100">
+          <h2 class="text-sm font-semibold text-texto-900">Top Participaciones</h2>
+        </div>
+        <ul id="lista-top-empleados" class="divide-y divide-superficie-100">
+          <li class="px-5 py-4 text-sm text-texto-400">Cargando...</li>
+        </ul>
+      </div>
+
+      <!-- Alertas de Personal Insuficiente -->
+      <div class="bg-white rounded-xl border border-red-200 shadow-sm">
+        <div class="px-5 py-4 border-b border-red-100 bg-red-50 rounded-t-xl">
+          <h2 class="text-sm font-semibold text-red-700 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+            Eventos sin Staff Suficiente
+          </h2>
+        </div>
+        <ul id="lista-alertas" class="divide-y divide-superficie-100">
+          <li class="px-5 py-4 text-sm text-texto-400">Cargando...</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+</Layout>
+
+<script>
+  const API = 'http://127.0.0.1:8001/api/v1';
+
+  // ── Helpers ────────────────────────────────────────────────────────────
+
+  function esc(t: string): string {
+    return String(t ?? '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function fmtFecha(d: string): string {
+    if (!d) return '—';
+    return new Intl.DateTimeFormat('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(d + 'T12:00:00'));
+  }
+
+  // ── Cargar Dashboard ──────────────────────────────────────────────────
+
+  async function cargarDashboard() {
+    try {
+      const res  = await fetch(`${API}/empleados/dashboard`);
+      const json = await res.json();
+
+      if (!json.ok) throw new Error();
+
+      const d = json.datos;
+
+      // KPIs
+      (document.getElementById('kpi-activos') as HTMLElement).textContent = d.total_activos;
+      (document.getElementById('kpi-inactivos-label') as HTMLElement).textContent = `${d.total_inactivos} inactivos registrados`;
+      (document.getElementById('kpi-staff-hoy') as HTMLElement).textContent = d.staff_hoy;
+      (document.getElementById('kpi-proximos') as HTMLElement).textContent = d.proximos_eventos?.length ?? 0;
+      (document.getElementById('kpi-alertas') as HTMLElement).textContent = d.alertas_personal?.length ?? 0;
+
+      // Próximos Eventos
+      const listaProximos = document.getElementById('lista-proximos')!;
+      if (!d.proximos_eventos?.length) {
+        listaProximos.innerHTML = '<div class="px-6 py-6 text-center text-sm text-texto-400">Sin eventos próximos.</div>';
+      } else {
+        listaProximos.innerHTML = d.proximos_eventos.map((ev: any) => `
+          <div class="px-6 py-4 hover:bg-superficie-50 transition-colors">
+            <div class="flex items-center justify-between gap-4">
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-texto-900 truncate">${esc(ev.cliente_nombre)}</p>
+                <p class="text-xs text-texto-500">${esc(ev.municipio)} · ${fmtFecha(ev.fecha_evento)} ${ev.hora_inicio ? '· ' + ev.hora_inicio : ''}</p>
+              </div>
+              <div class="flex items-center gap-3 shrink-0">
+                <span class="text-xs bg-yeti-100 text-yeti-700 px-2.5 py-1 rounded-full font-medium">${ev.asignaciones_count ?? 0} staff</span>
+                <a href="/rh/asignaciones?evento=${ev.id}" class="text-xs text-yeti-600 hover:underline">Gestionar</a>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Top Empleados
+      const listaTop = document.getElementById('lista-top-empleados')!;
+      if (!d.top_empleados?.length) {
+        listaTop.innerHTML = '<li class="px-5 py-4 text-sm text-texto-400">Sin datos.</li>';
+      } else {
+        listaTop.innerHTML = d.top_empleados.map((emp: any, i: number) => `
+          <li class="px-5 py-3 flex items-center gap-3">
+            <span class="w-6 h-6 rounded-full bg-yeti-100 text-yeti-700 text-xs font-bold flex items-center justify-center shrink-0">${i + 1}</span>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium text-texto-900 truncate">${esc(emp.nombre)} ${esc(emp.apellido_paterno)}</p>
+              <p class="text-xs text-texto-400">${esc(emp.puesto ?? '—')}</p>
+            </div>
+            <span class="text-xs font-semibold text-texto-700">${emp.total_participaciones}</span>
+          </li>
+        `).join('');
+      }
+
+      // Alertas
+      const listaAlertas = document.getElementById('lista-alertas')!;
+      if (!d.alertas_personal?.length) {
+        listaAlertas.innerHTML = '<li class="px-5 py-4 text-sm text-ganancia-600">✓ Sin alertas por ahora.</li>';
+      } else {
+        listaAlertas.innerHTML = d.alertas_personal.map((ev: any) => `
+          <li class="px-5 py-3">
+            <p class="text-sm font-medium text-texto-900 truncate">${esc(ev.cliente_nombre)}</p>
+            <p class="text-xs text-red-500">${fmtFecha(ev.fecha_evento)} · ${esc(ev.municipio)}</p>
+          </li>
+        `).join('');
+      }
+
+    } catch {
+      console.error('Error al cargar dashboard de RH');
+    }
+  }
+
+  cargarDashboard();
+</script>

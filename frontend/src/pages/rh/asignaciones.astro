@@ -1,0 +1,331 @@
+---
+/**
+ * Página: Asignaciones de Eventos (Staff por Evento)
+ * Módulo E — Recursos Humanos · Raspados Yeti ERP
+ */
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout titulo="Asignaciones de Staff" descripcion="Asignación de empleados a eventos en Raspados Yeti ERP">
+
+  <!-- Encabezado -->
+  <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-texto-900">Asignaciones de Staff</h1>
+      <p class="text-sm text-texto-500 mt-1">Asigna personal a eventos y controla la asistencia</p>
+    </div>
+    <button id="btn-nueva-asignacion"
+      class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-yeti-600 text-white text-sm font-medium hover:bg-yeti-700 transition-colors shadow-sm">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      Nueva Asignación
+    </button>
+  </div>
+
+  <!-- Selector de Evento -->
+  <div class="bg-white rounded-xl border border-superficie-200 p-4 mb-6 flex flex-wrap gap-3 shadow-sm items-end">
+    <div class="flex-1 min-w-[260px]">
+      <label class="block text-xs font-medium text-texto-700 mb-1">Seleccionar Evento</label>
+      <select id="sel-evento" class="w-full px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400">
+        <option value="">— Selecciona un evento —</option>
+      </select>
+    </div>
+    <button id="btn-ver-evento" class="px-4 py-2 text-sm rounded-lg bg-superficie-100 hover:bg-superficie-200 text-texto-700 font-medium transition-colors">
+      Ver Staff
+    </button>
+  </div>
+
+  <!-- Detalle del Evento -->
+  <div id="panel-evento" class="hidden mb-6 bg-white rounded-xl border border-yeti-200 p-5 shadow-sm">
+    <div class="flex flex-wrap gap-4 items-start justify-between">
+      <div>
+        <h2 id="det-nombre" class="text-base font-semibold text-texto-900">—</h2>
+        <p id="det-info" class="text-sm text-texto-500 mt-1">—</p>
+      </div>
+      <span id="det-estado" class="text-xs font-medium px-3 py-1 rounded-full bg-yeti-100 text-yeti-700">—</span>
+    </div>
+  </div>
+
+  <!-- Lista de Asignaciones del Evento -->
+  <div id="panel-asignaciones" class="bg-white rounded-xl border border-superficie-200 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-superficie-100 flex items-center justify-between">
+      <h3 class="text-sm font-semibold text-texto-900">Staff Asignado</h3>
+      <span id="total-asignaciones" class="text-xs text-texto-500">Selecciona un evento</span>
+    </div>
+    <div id="lista-asignaciones" class="divide-y divide-superficie-100">
+      <div class="px-6 py-8 text-center text-sm text-texto-400">Selecciona un evento para ver el staff asignado.</div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL ASIGNAR EMPLEADO ══ -->
+  <div id="modal-asignacion" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" id="modal-asig-overlay"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="sticky top-0 bg-white px-6 py-4 border-b border-superficie-200 flex items-center justify-between rounded-t-2xl">
+        <h3 class="text-base font-semibold text-texto-900">Asignar Empleado</h3>
+        <button id="modal-asig-cerrar" class="text-texto-400 hover:text-texto-700">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <form id="form-asignacion" class="px-6 py-5 space-y-4" novalidate>
+        <input type="hidden" id="asig-evento-id" />
+
+        <div>
+          <label class="block text-xs font-medium text-texto-700 mb-1">Empleado *</label>
+          <select id="asig-empleado" required class="w-full px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400">
+            <option value="">— Selecciona —</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-texto-700 mb-1">Rol para este Evento</label>
+          <select id="asig-rol" class="w-full px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400">
+            <option value="">— Sin rol específico —</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-texto-700 mb-1">Hora Inicio</label>
+            <input id="asig-hora-inicio" type="time" class="w-full px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-texto-700 mb-1">Hora Fin</label>
+            <input id="asig-hora-fin" type="time" class="w-full px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400" />
+          </div>
+        </div>
+
+        <!-- Indicador de disponibilidad -->
+        <div id="disp-indicator" class="hidden rounded-lg px-4 py-2.5 text-sm font-medium border"></div>
+
+        <div>
+          <label class="block text-xs font-medium text-texto-700 mb-1">Observaciones</label>
+          <textarea id="asig-observaciones" rows="2" class="w-full px-3 py-2 text-sm rounded-lg border border-superficie-300 focus:outline-none focus:ring-2 focus:ring-yeti-400 resize-none"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" id="btn-cancel-asig" class="px-4 py-2 text-sm rounded-lg border border-superficie-300 text-texto-700 hover:bg-superficie-50">Cancelar</button>
+          <button type="submit" class="px-5 py-2 text-sm rounded-lg bg-yeti-600 text-white font-medium hover:bg-yeti-700">Asignar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</Layout>
+
+<script>
+  const API = 'http://127.0.0.1:8001/api/v1';
+
+  function esc(t: any) { return String(t ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function fmtFecha(d: string) {
+    if (!d) return '—';
+    return new Intl.DateTimeFormat('es-MX', { day:'2-digit', month:'short', year:'numeric' }).format(new Date(d+'T12:00:00'));
+  }
+
+  const ESTADO_COLORS: Record<string,string> = {
+    pendiente:  'bg-yellow-100 text-yellow-700',
+    confirmado: 'bg-blue-100 text-blue-700',
+    asistio:    'bg-ganancia-100 text-ganancia-700',
+    falto:      'bg-red-100 text-red-600',
+  };
+  const ESTADO_LABELS: Record<string,string> = {
+    pendiente:'Pendiente', confirmado:'Confirmado', asistio:'Asistió', falto:'Faltó'
+  };
+
+  let eventoActual: any = null;
+  let todosEventos: any[] = [];
+
+  // ── Cargar selectores ─────────────────────────────────────────────────
+  async function initSelects() {
+    // Eventos
+    try {
+      const res  = await fetch(`${API}/eventos?per_page=100`);
+      const json = await res.json();
+      todosEventos = json.datos?.data ?? [];
+      const sel = document.getElementById('sel-evento')!;
+      todosEventos.forEach((ev: any) => {
+        const opt = document.createElement('option');
+        opt.value = ev.id;
+        opt.textContent = `${fmtFecha(ev.fecha_evento)} · ${ev.cliente_nombre} (${ev.municipio})`;
+        sel.appendChild(opt);
+      });
+    } catch {}
+
+    // Empleados activos en modal
+    try {
+      const res  = await fetch(`${API}/empleados?estado=activo&per_page=100`);
+      const json = await res.json();
+      const selEmp = document.getElementById('asig-empleado')!;
+      (json.datos?.data ?? []).forEach((emp: any) => {
+        const opt = document.createElement('option');
+        opt.value = emp.id;
+        opt.textContent = emp.nombre_completo ?? `${emp.nombre} ${emp.apellido_paterno}`;
+        selEmp.appendChild(opt);
+      });
+    } catch {}
+
+    // Roles en modal
+    try {
+      const res  = await fetch(`${API}/roles-staff`);
+      const json = await res.json();
+      const selRol = document.getElementById('asig-rol')!;
+      (json.datos ?? []).forEach((r: any) => {
+        const opt = document.createElement('option');
+        opt.value = r.id; opt.textContent = r.nombre;
+        selRol.appendChild(opt);
+      });
+    } catch {}
+
+    // Pre-seleccionar desde query param ?evento=X
+    const params = new URLSearchParams(window.location.search);
+    const eventoParam = params.get('evento');
+    if (eventoParam) {
+      (document.getElementById('sel-evento') as HTMLSelectElement).value = eventoParam;
+      await verStaff(Number(eventoParam));
+    }
+  }
+
+  // ── Ver Staff de Evento ───────────────────────────────────────────────
+  async function verStaff(eventoId: number) {
+    try {
+      const res  = await fetch(`${API}/eventos/${eventoId}/asignaciones`);
+      const json = await res.json();
+      eventoActual = json.datos?.evento;
+
+      // Panel info evento
+      const panel = document.getElementById('panel-evento')!;
+      panel.classList.remove('hidden');
+      (document.getElementById('det-nombre') as HTMLElement).textContent = eventoActual?.cliente_nombre ?? '—';
+      (document.getElementById('det-info') as HTMLElement).textContent =
+        `${fmtFecha(eventoActual?.fecha_evento)} · ${eventoActual?.hora_inicio ?? ''} – ${eventoActual?.hora_fin ?? ''}`;
+      (document.getElementById('det-estado') as HTMLElement).textContent = eventoActual?.estado ?? '—';
+
+      const asigs = json.datos?.asignaciones ?? [];
+      (document.getElementById('total-asignaciones') as HTMLElement).textContent = `${asigs.length} empleado(s) asignado(s)`;
+
+      const lista = document.getElementById('lista-asignaciones')!;
+      if (!asigs.length) {
+        lista.innerHTML = '<div class="px-6 py-8 text-center text-sm text-texto-400">Sin staff asignado aún.</div>';
+        return;
+      }
+      lista.innerHTML = asigs.map((a: any) => {
+        const badgeColor = ESTADO_COLORS[a.estado_asistencia] ?? 'bg-superficie-100 text-texto-600';
+        const label      = ESTADO_LABELS[a.estado_asistencia] ?? a.estado_asistencia;
+        return `
+        <div class="px-6 py-4 flex items-center gap-4 hover:bg-superficie-50 transition-colors">
+          <img src="${esc(a.empleado?.foto_url ?? '')}" alt="" class="w-10 h-10 rounded-full object-cover border border-superficie-200 shrink-0" />
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-texto-900">${esc(a.empleado?.nombre_completo ?? `${a.empleado?.nombre} ${a.empleado?.apellido_paterno}`)}</p>
+            <p class="text-xs text-texto-500">${esc(a.rol_asignado ?? a.rol_staff?.nombre ?? '—')} · ${a.hora_inicio ?? '—'} – ${a.hora_fin ?? '—'}</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <select data-id="${a.id}" class="sel-asistencia text-xs rounded-lg border border-superficie-300 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-yeti-400 ${badgeColor}">
+              <option value="pendiente" ${a.estado_asistencia==='pendiente'?'selected':''}>Pendiente</option>
+              <option value="confirmado" ${a.estado_asistencia==='confirmado'?'selected':''}>Confirmado</option>
+              <option value="asistio" ${a.estado_asistencia==='asistio'?'selected':''}>Asistió</option>
+              <option value="falto" ${a.estado_asistencia==='falto'?'selected':''}>Faltó</option>
+            </select>
+            <button data-id="${a.id}" class="btn-del-asig text-xs px-2 py-1 rounded bg-red-50 text-red-600 hover:bg-red-100 transition-colors">✕</button>
+          </div>
+        </div>`;
+      }).join('');
+
+      // Listeners asistencia
+      document.querySelectorAll('.sel-asistencia').forEach(sel =>
+        sel.addEventListener('change', async (e) => {
+          const t   = e.target as HTMLSelectElement;
+          const id  = t.dataset.id;
+          await fetch(`${API}/asignaciones/${id}/asistencia`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ estado_asistencia: t.value }),
+          });
+        }));
+
+      document.querySelectorAll('.btn-del-asig').forEach(btn =>
+        btn.addEventListener('click', async () => {
+          const id = (btn as HTMLElement).dataset.id;
+          if (!confirm('¿Eliminar esta asignación?')) return;
+          await fetch(`${API}/asignaciones/${id}`, { method: 'DELETE' });
+          verStaff(eventoId);
+        }));
+
+    } catch { (window as any).Swal?.fire('Error', 'No se pudo cargar el staff del evento.', 'error'); }
+  }
+
+  // ── Verificar disponibilidad al cambiar horas ─────────────────────────
+  async function verificarDisponibilidad() {
+    const empId     = (document.getElementById('asig-empleado') as HTMLSelectElement).value;
+    const horaInicio = (document.getElementById('asig-hora-inicio') as HTMLInputElement).value;
+    const horaFin   = (document.getElementById('asig-hora-fin') as HTMLInputElement).value;
+    const eventoId  = (document.getElementById('asig-evento-id') as HTMLInputElement).value;
+    const ind       = document.getElementById('disp-indicator')!;
+
+    if (!empId || !horaInicio || !horaFin || !eventoId) { ind.classList.add('hidden'); return; }
+
+    const evento = todosEventos.find(ev => String(ev.id) === eventoId);
+    if (!evento) return;
+
+    try {
+      const res  = await fetch(`${API}/empleados/${empId}/disponibilidad?fecha=${evento.fecha_evento}&hora_inicio=${horaInicio}&hora_fin=${horaFin}`);
+      const json = await res.json();
+      ind.classList.remove('hidden', 'bg-ganancia-50', 'text-ganancia-700', 'border-ganancia-200', 'bg-red-50', 'text-red-700', 'border-red-200');
+      if (json.disponible) {
+        ind.classList.add('bg-ganancia-50', 'text-ganancia-700', 'border-ganancia-200');
+        ind.textContent = '✓ Empleado disponible en este horario.';
+      } else {
+        ind.classList.add('bg-red-50', 'text-red-700', 'border-red-200');
+        ind.textContent = `⚠ ${json.razon}`;
+      }
+    } catch {}
+  }
+
+  // ── Formulario Asignación ─────────────────────────────────────────────
+  document.getElementById('form-asignacion')!.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const eventoId = (document.getElementById('asig-evento-id') as HTMLInputElement).value;
+    const rolId    = (document.getElementById('asig-rol') as HTMLSelectElement).value;
+    const rolLabel = (document.getElementById('asig-rol') as HTMLSelectElement).selectedOptions[0]?.text ?? '';
+    const body = {
+      empleado_id:       Number((document.getElementById('asig-empleado') as HTMLSelectElement).value),
+      evento_id:         Number(eventoId),
+      rol_staff_id:      rolId ? Number(rolId) : null,
+      rol_asignado:      rolLabel !== '— Sin rol específico —' ? rolLabel : null,
+      hora_inicio:       (document.getElementById('asig-hora-inicio') as HTMLInputElement).value || null,
+      hora_fin:          (document.getElementById('asig-hora-fin') as HTMLInputElement).value || null,
+      observaciones:     (document.getElementById('asig-observaciones') as HTMLTextAreaElement).value || null,
+    };
+    try {
+      const res  = await fetch(`${API}/asignaciones`, { method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(body) });
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.mensaje ?? 'Error');
+      cerrarModalAsig();
+      (window as any).Swal?.fire('¡Asignado!', json.mensaje, 'success');
+      if (eventoId) verStaff(Number(eventoId));
+    } catch (err: any) { (window as any).Swal?.fire('Error', err.message, 'error'); }
+  });
+
+  function cerrarModalAsig() { document.getElementById('modal-asignacion')!.classList.add('hidden'); }
+
+  // ── Listeners ─────────────────────────────────────────────────────────
+  document.getElementById('btn-ver-evento')!.addEventListener('click', () => {
+    const id = Number((document.getElementById('sel-evento') as HTMLSelectElement).value);
+    if (id) verStaff(id);
+  });
+
+  document.getElementById('btn-nueva-asignacion')!.addEventListener('click', () => {
+    const eventoId = (document.getElementById('sel-evento') as HTMLSelectElement).value;
+    (document.getElementById('asig-evento-id') as HTMLInputElement).value = eventoId;
+    document.getElementById('modal-asignacion')!.classList.remove('hidden');
+  });
+
+  document.getElementById('modal-asig-cerrar')!.addEventListener('click', cerrarModalAsig);
+  document.getElementById('btn-cancel-asig')!.addEventListener('click', cerrarModalAsig);
+  document.getElementById('modal-asig-overlay')!.addEventListener('click', cerrarModalAsig);
+  document.getElementById('asig-empleado')!.addEventListener('change', verificarDisponibilidad);
+  document.getElementById('asig-hora-inicio')!.addEventListener('change', verificarDisponibilidad);
+  document.getElementById('asig-hora-fin')!.addEventListener('change', verificarDisponibilidad);
+
+  initSelects();
+</script>
