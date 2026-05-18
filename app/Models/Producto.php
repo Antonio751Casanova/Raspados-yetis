@@ -45,6 +45,15 @@ class Producto extends Model
     ];
 
     /**
+     * Atributos calculados para la salida JSON.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = [
+        'costo_produccion',
+    ];
+
+    /**
      * Conversión de tipos (casting) para los atributos.
      *
      * @return array<string, string>
@@ -54,6 +63,19 @@ class Producto extends Model
         return [
             'precio_sugerido' => 'decimal:2',
         ];
+    }
+
+    /**
+     * Costo total de produccion basado en la receta.
+     */
+    public function getCostoProduccionAttribute(): float
+    {
+        $insumos = $this->relationLoaded('insumos') ? $this->insumos : $this->insumos()->get();
+
+        return $insumos->reduce(function (float $total, $insumo) {
+            $cantidad = (float) ($insumo->pivot->cantidad ?? 0);
+            return $total + ((float) $insumo->costo_adquisicion * $cantidad);
+        }, 0.0);
     }
 
     /**

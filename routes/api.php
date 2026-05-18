@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\InsumoController;
 use App\Http\Controllers\Api\V1\ProductoController;
 use App\Http\Controllers\Api\V1\CotizacionController;
@@ -32,6 +33,15 @@ Route::get('/user', function (Request $request) {
 
 // ─── API v1 ─────────────────────────────────────────────────────────────
 Route::prefix('v1')->group(function () {
+    // ─── Autenticacion ─────────────────────────────────────────────────────
+    Route::post('auth/register', [AuthController::class, 'register'])->name('auth.register');
+    Route::post('auth/login', [AuthController::class, 'login'])->name('auth.login');
+    Route::post('auth/password/email', [AuthController::class, 'sendResetLinkEmail'])
+        ->name('auth.password.email');
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
+    });
 
     // ══════════════════════════════════════════════════════════════════════
     // ── Módulo A: Motor de Costeo ────────────────────────────────────────
@@ -56,15 +66,15 @@ Route::prefix('v1')->group(function () {
     // ── Motor de Costeo ──────────────────────────────────────────────────
     // GET  /api/v1/productos/{id}/costo-base → Calcular costo de producción unitario
     Route::get('productos/{id}/costo-base', [ProductoController::class, 'calcularCostoBase'])
-         ->name('productos.costo-base');
+        ->name('productos.costo-base');
 
     // POST /api/v1/cotizar-evento → Cotización completa de evento (insumos + transporte + nómina)
     Route::post('cotizar-evento', [ProductoController::class, 'cotizarEvento'])
-         ->name('cotizar-evento');
+        ->name('cotizar-evento');
 
-        // POST /api/v1/cotizar-evento/pdf → Descargar cotización en PDF
-        Route::post('cotizar-evento/pdf', [ProductoController::class, 'cotizarEventoPdf'])
-            ->name('cotizar-evento.pdf');
+    // POST /api/v1/cotizar-evento/pdf → Descargar cotización en PDF
+    Route::post('cotizar-evento/pdf', [ProductoController::class, 'cotizarEventoPdf'])
+        ->name('cotizar-evento.pdf');
 
     // POST /api/v1/cotizaciones → Crear cotizacion persistida
     Route::post('cotizaciones', [CotizacionController::class, 'store'])
@@ -86,78 +96,79 @@ Route::prefix('v1')->group(function () {
     Route::post('cotizaciones/{id}/cancelar', [CotizacionController::class, 'cancelar'])
         ->name('cotizaciones.cancelar');
 
-    // ══════════════════════════════════════════════════════════════════════
-    // ── Módulo B: Calendario y Gestión de Eventos ────────────────────────
-    // ══════════════════════════════════════════════════════════════════════
+    Route::middleware('auth:sanctum')->group(function () {
+        // ══════════════════════════════════════════════════════════════════════
+        // ── Módulo B: Calendario y Gestión de Eventos ────────────────────────
+        // ══════════════════════════════════════════════════════════════════════
 
-    // ── Eventos (CRUD) ───────────────────────────────────────────────────
-    // GET    /api/v1/eventos              → Listar (con filtros: desde, hasta, estado, mes, anio)
-    // POST   /api/v1/eventos              → Crear nuevo evento
-    // GET    /api/v1/eventos/{id}         → Ver detalle de un evento
-    // PUT    /api/v1/eventos/{id}         → Actualizar un evento
-    // DELETE /api/v1/eventos/{id}         → Eliminar un evento
-    Route::apiResource('eventos', EventoController::class);
+        // ── Eventos (CRUD) ───────────────────────────────────────────────────
+        // GET    /api/v1/eventos              → Listar (con filtros: desde, hasta, estado, mes, anio)
+        // POST   /api/v1/eventos              → Crear nuevo evento
+        // GET    /api/v1/eventos/{id}         → Ver detalle de un evento
+        // PUT    /api/v1/eventos/{id}         → Actualizar un evento
+        // DELETE /api/v1/eventos/{id}         → Eliminar un evento
+        Route::apiResource('eventos', EventoController::class);
 
-    // ── Transición de Estado ─────────────────────────────────────────────
-    // PATCH /api/v1/eventos/{id}/estado   → Cambiar estado (flujo validado)
-    Route::patch('eventos/{id}/estado', [EventoController::class, 'cambiarEstado'])
-         ->name('eventos.cambiar-estado');
-    // ──────────────── Módulo C: CRM (Clientes y Eventos) ──────────────────────
-    Route::apiResource('clientes', ClienteController::class);
+        // ── Transición de Estado ─────────────────────────────────────────────
+        // PATCH /api/v1/eventos/{id}/estado   → Cambiar estado (flujo validado)
+        Route::patch('eventos/{id}/estado', [EventoController::class, 'cambiarEstado'])
+            ->name('eventos.cambiar-estado');
+        // ──────────────── Módulo C: CRM (Clientes y Eventos) ──────────────────────
+        Route::apiResource('clientes', ClienteController::class);
 
-    // ── Notificaciones del sistema ──────────────────────────────────────
-    Route::get('notificaciones', [NotificacionController::class, 'index'])->name('notificaciones.index');
-    Route::patch('notificaciones/{id}/leer', [NotificacionController::class, 'marcarLeida'])->name('notificaciones.leer');
-    Route::patch('notificaciones/leer-todas', [NotificacionController::class, 'marcarTodas'])->name('notificaciones.leer-todas');
+        // ── Notificaciones del sistema ──────────────────────────────────────
+        Route::get('notificaciones', [NotificacionController::class, 'index'])->name('notificaciones.index');
+        Route::patch('notificaciones/{id}/leer', [NotificacionController::class, 'marcarLeida'])->name('notificaciones.leer');
+        Route::patch('notificaciones/leer-todas', [NotificacionController::class, 'marcarTodas'])->name('notificaciones.leer-todas');
 
-    // ══════════════════════════════════════════════════════════════════════
-    // ── Módulo E: Recursos Humanos ───────────────────────────────────────
-    // ══════════════════════════════════════════════════════════════════════
+        // ══════════════════════════════════════════════════════════════════════
+        // ── Módulo E: Recursos Humanos ───────────────────────────────────────
+        // ══════════════════════════════════════════════════════════════════════
 
-    // ── Empleados (CRUD) ─────────────────────────────────────────────────
-    // GET    /api/v1/empleados                        → Listar (filtros: estado, buscar, rol)
-    // POST   /api/v1/empleados                        → Crear empleado
-    // GET    /api/v1/empleados/{id}                   → Detalle
-    // PUT    /api/v1/empleados/{id}                   → Actualizar
-    // DELETE /api/v1/empleados/{id}                   → Soft-delete
-    Route::apiResource('empleados', EmpleadoController::class);
+        // ── Empleados (CRUD) ─────────────────────────────────────────────────
+        // GET    /api/v1/empleados                        → Listar (filtros: estado, buscar, rol)
+        // POST   /api/v1/empleados                        → Crear empleado
+        // GET    /api/v1/empleados/{id}                   → Detalle
+        // PUT    /api/v1/empleados/{id}                   → Actualizar
+        // DELETE /api/v1/empleados/{id}                   → Soft-delete
+        Route::apiResource('empleados', EmpleadoController::class);
 
-    // GET /api/v1/empleados/dashboard                 → Métricas de RR. HH.
-    Route::get('empleados/dashboard', [EmpleadoController::class, 'dashboard'])
-         ->name('empleados.dashboard');
+        // GET /api/v1/empleados/dashboard                 → Métricas de RR. HH.
+        Route::get('empleados/dashboard', [EmpleadoController::class, 'dashboard'])
+            ->name('empleados.dashboard');
 
-    // GET /api/v1/empleados/{id}/historial            → Historial de participaciones
-    Route::get('empleados/{empleado}/historial', [EmpleadoController::class, 'historial'])
-         ->name('empleados.historial');
+        // GET /api/v1/empleados/{id}/historial            → Historial de participaciones
+        Route::get('empleados/{empleado}/historial', [EmpleadoController::class, 'historial'])
+            ->name('empleados.historial');
 
-    // GET /api/v1/empleados/{id}/disponibilidad       → Verificar disponibilidad en rango horario
-    Route::get('empleados/{empleado}/disponibilidad', [EmpleadoController::class, 'disponibilidad'])
-         ->name('empleados.disponibilidad');
+        // GET /api/v1/empleados/{id}/disponibilidad       → Verificar disponibilidad en rango horario
+        Route::get('empleados/{empleado}/disponibilidad', [EmpleadoController::class, 'disponibilidad'])
+            ->name('empleados.disponibilidad');
 
-    // ── Asignaciones de Eventos ──────────────────────────────────────────
-    // GET    /api/v1/eventos/{eventoId}/asignaciones  → Staff de un evento
-    Route::get('eventos/{eventoId}/asignaciones', [AsignacionController::class, 'porEvento'])
-         ->name('asignaciones.por-evento');
+        // ── Asignaciones de Eventos ──────────────────────────────────────────
+        // GET    /api/v1/eventos/{eventoId}/asignaciones  → Staff de un evento
+        Route::get('eventos/{eventoId}/asignaciones', [AsignacionController::class, 'porEvento'])
+            ->name('asignaciones.por-evento');
 
-    // POST   /api/v1/asignaciones                    → Asignar empleado a evento
-    Route::post('asignaciones', [AsignacionController::class, 'store'])
-         ->name('asignaciones.store');
+        // POST   /api/v1/asignaciones                    → Asignar empleado a evento
+        Route::post('asignaciones', [AsignacionController::class, 'store'])
+            ->name('asignaciones.store');
 
-    // PATCH  /api/v1/asignaciones/{id}/asistencia    → Actualizar estado de asistencia
-    Route::patch('asignaciones/{asignacion}/asistencia', [AsignacionController::class, 'actualizarAsistencia'])
-         ->name('asignaciones.asistencia');
+        // PATCH  /api/v1/asignaciones/{id}/asistencia    → Actualizar estado de asistencia
+        Route::patch('asignaciones/{asignacion}/asistencia', [AsignacionController::class, 'actualizarAsistencia'])
+            ->name('asignaciones.asistencia');
 
-    // DELETE /api/v1/asignaciones/{id}               → Eliminar asignación
-    Route::delete('asignaciones/{asignacion}', [AsignacionController::class, 'destroy'])
-         ->name('asignaciones.destroy');
+        // DELETE /api/v1/asignaciones/{id}               → Eliminar asignación
+        Route::delete('asignaciones/{asignacion}', [AsignacionController::class, 'destroy'])
+            ->name('asignaciones.destroy');
 
-    // GET    /api/v1/asignaciones/calendario          → Vista calendario (mes)
-    Route::get('asignaciones/calendario', [AsignacionController::class, 'calendario'])
-         ->name('asignaciones.calendario');
+        // GET    /api/v1/asignaciones/calendario          → Vista calendario (mes)
+        Route::get('asignaciones/calendario', [AsignacionController::class, 'calendario'])
+            ->name('asignaciones.calendario');
 
-    // ── Roles de Staff (catálogo) ────────────────────────────────────────
-    // GET    /api/v1/roles-staff                      → Listar roles activos
-    Route::get('roles-staff', [RolStaffController::class, 'index'])
-         ->name('roles-staff.index');
+        // ── Roles de Staff (catálogo) ────────────────────────────────────────
+        // GET    /api/v1/roles-staff                      → Listar roles activos
+        Route::get('roles-staff', [RolStaffController::class, 'index'])
+            ->name('roles-staff.index');
+    });
 });
-

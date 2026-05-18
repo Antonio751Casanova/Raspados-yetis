@@ -5,8 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Modelo: Evento
@@ -132,26 +130,6 @@ class Evento extends Model
     {
         return $this->belongsTo(Cliente::class);
     }
-    // ─── Módulo E: Relaciones con RR. HH. ────────────────────────────────
-
-    /**
-     * Asignaciones de staff para este evento.
-     */
-    public function asignaciones(): HasMany
-    {
-        return $this->hasMany(\App\Models\AsignacionEvento::class, 'evento_id');
-    }
-
-    /**
-     * Empleados asignados a este evento (N:M).
-     */
-    public function empleados(): BelongsToMany
-    {
-        return $this->belongsToMany(\App\Models\Empleado::class, 'asignaciones_evento', 'evento_id', 'empleado_id')
-                    ->withPivot(['rol_asignado', 'hora_inicio', 'hora_fin', 'estado_asistencia'])
-                    ->withTimestamps();
-    }
-
     // ─── Métodos de negocio ──────────────────────────────────────────────
 
     /**
